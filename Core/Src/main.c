@@ -30,6 +30,9 @@
 #include "esp8266.h"
 #include "oled.h"
 #include "hc_sr505.h"
+#include "uln2003.h"
+#include "rc522.h"
+#include "ds1302.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -73,6 +76,9 @@ int main(void)
 
   /* USER CODE BEGIN 1 */
   uint8_t wifi_try = 0, mqtt_try = 0;
+		  uint8_t cardid[4]={0x00,0x00,0x00,0x00};
+		char data_show[20];
+					uint8_t g_ucTempbuf[20]; 
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -99,15 +105,20 @@ int main(void)
   MX_USART2_UART_Init();
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
+	//NFC初始化
+	PCD_Reset();
+  PCD_AntennaOff(); 
+  PCD_AntennaOn();
   Delay_Init();
 	OLED_Init();
+	DS1302_Init();
+	ULN2003_Init();
 	
 	#if TEST
 	  //OLED TEST
 //	 OLED_ShowString(0,0,(uint8_t*)"hello",8,1);
 //	 OLED_ShowString(0,8,(uint8_t*)"Welcome",8,1);
 //	 OLED_Refresh();
-   	 HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_RESET);
 	#endif
   /* USER CODE END 2 */
 
@@ -131,16 +142,48 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 		#if TEST 
-		OLED_Clear();
-	OLED_ShowString(0,0,(uint8_t*)"TEST",8,1);
-	 OLED_Refresh();
-	 //HCSR505_TEST
-	 CheckHC_SR505(HC_SR505_1_GPIO_Port, HC_SR505_1_Pin, LED1_GPIO_Port, LED1_Pin, &hc_sr505_counter1);	
-	 // 检测HC_SR505_2状态并控制LED2
-	 CheckHC_SR505(HC_SR505_2_GPIO_Port, HC_SR505_2_Pin, LED2_GPIO_Port, LED2_Pin, &hc_sr505_counter2);		
-	 // 检测HC_SR505_3状态并控制LED3
-		CheckHC_SR505(HC_SR505_3_GPIO_Port, HC_SR505_3_Pin, LED3_GPIO_Port, LED3_Pin, &hc_sr505_counter3);
+//		OLED_Clear();
+//	  OLED_ShowString(0,0,(uint8_t*)"TEST",8,1);
+//	  OLED_Refresh();
+		
+	  // 读取当前时间并显示
+//		DS1302_Time current_time;
+//		DS1302_GetTime(&current_time);
+		
+		// 格式化时间字符串
+//		char time_str[40];
+//		sprintf(time_str, "20%02d-%02d-%02d %02d:%02d:%02d", current_time.year, current_time.month, current_time.date,current_time.hour,current_time.minute,current_time.second);
+//		OLED_ShowString(0, 8, (uint8_t*)time_str, 8, 1);
+//		 OLED_Refresh();
+//		HAL_Delay(1000);
+//		
+//		OLED_Refresh();
+//	 //HCSR505_TEST
+//	 CheckHC_SR505(HC_SR505_1_GPIO_Port, HC_SR505_1_Pin, LED1_GPIO_Port, LED1_Pin, &hc_sr505_counter1);	
+//	 // 检测HC_SR505_2状态并控制LED2
+//	 CheckHC_SR505(HC_SR505_2_GPIO_Port, HC_SR505_2_Pin, LED2_GPIO_Port, LED2_Pin, &hc_sr505_counter2);		
+//	 // 检测HC_SR505_3状态并控制LED3
+//		CheckHC_SR505(HC_SR505_3_GPIO_Port, HC_SR505_3_Pin, LED3_GPIO_Port, LED3_Pin, &hc_sr505_counter3);
+
+		//步进电机测试
+		//ULN2003_Rotate(90,0);
+		
+		if(PCD_Request(PICC_REQALL, g_ucTempbuf)!=PCD_OK) //寻卡
+	 {
+//		PCD_Reset();
+//		PCD_AntennaOff(); 
+//		PCD_AntennaOn(); 
+//	  continue;
+	 }
+			 if(PCD_Anticoll(cardid)==PCD_OK)
+	 {
+		 sprintf(data_show,"id:%02x%02x%02x%02x",cardid[0],cardid[1],cardid[2],cardid[3]);
+	   OLED_ShowString(0,8,(uint8_t*)data_show,8,1);
+     OLED_Refresh();
+	 }
 	 #endif
+		
+		
   }
   /* USER CODE END 3 */
 }
