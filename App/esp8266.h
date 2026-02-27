@@ -14,6 +14,7 @@
 #define PRODUCT_ID      "U7ATCkY2W7"          // 产品ID
 #define DEVICE_NAME     "test"                // 设备名称
 #define MQTT_TOKEN      "version=2018-10-31&res=products%2FU7ATCkY2W7%2Fdevices%2Ftest&et=1895228001&method=md5&sign=ELgKjC7d7DZ7zZ0qsbNyBQ%3D%3D"  // 设备token
+//#define MQTT_TOKEN      "cFRrYmZrVHlsdkx6UXhwd0ZBbGpBb0psYzJTdk5MMGM="  // 设备token
 
 // MQTT 主题宏定义
 #define MQTT_TOPIC_POST        "$sys/U7ATCkY2W7/test/thing/property/post"         // 发布属性主题

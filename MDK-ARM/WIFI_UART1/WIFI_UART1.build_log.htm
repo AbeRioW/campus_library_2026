@@ -27,24 +27,18 @@ Project File Date:  02/27/2026
 <h2>Output:</h2>
 *** Using Compiler 'V5.06 update 6 (build 750)', folder: 'D:\Program Files\KEIL5\ARM\ARMCC\Bin'
 Build target 'WIFI_UART1'
-compiling main.c...
-../App/esp8266.h(52): warning:  #1-D: last line of file ends without a newline
+compiling esp8266.c...
+..\App\esp8266.h(53): warning:  #1-D: last line of file ends without a newline
   #endif /* __ESP8266_H */
-../App/hc_sr505.h(13): warning:  #1-D: last line of file ends without a newline
-  #endif
-../App/rc522.h(151): warning:  #1-D: last line of file ends without a newline
-  #endif
-../Core/Src/main.c(180): warning:  #223-D: function "sprintf" declared implicitly
-  		 sprintf(data_show,"id:%02x%02x%02x%02x",cardid[0],cardid[1],cardid[2],cardid[3]);
-../Core/Src/main.c(78): warning:  #177-D: variable "wifi_try"  was declared but never referenced
-    uint8_t wifi_try = 0, mqtt_try = 0;
-../Core/Src/main.c(78): warning:  #177-D: variable "mqtt_try"  was declared but never referenced
-    uint8_t wifi_try = 0, mqtt_try = 0;
-../Core/Src/main.c: 6 warnings, 0 errors
+..\App\esp8266.c(315): warning:  #550-D: variable "got_response"  was set but never used
+          bool got_response = false;
+..\App\esp8266.c(626): warning:  #1-D: last line of file ends without a newline
+  }
+..\App\esp8266.c: 3 warnings, 0 errors
 linking...
-Program Size: Code=11920 RO-data=7000 RW-data=52 ZI-data=3740  
+Program Size: Code=14144 RO-data=452 RW-data=52 ZI-data=3740  
 FromELF: creating hex file...
-"WIFI_UART1\WIFI_UART1.axf" - 0 Error(s), 6 Warning(s).
+"WIFI_UART1\WIFI_UART1.axf" - 0 Error(s), 3 Warning(s).
 
 <h2>Software Packages used:</h2>
 

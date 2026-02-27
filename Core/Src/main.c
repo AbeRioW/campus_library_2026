@@ -37,7 +37,7 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-#define TEST 1
+#define TEST 0
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -124,18 +124,19 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-	//ESP8266_Init();
+	ESP8266_Init();
 	
 
   //WIFI连接
-//  while (wifi_try < 5 && !ESP8266_ConnectWiFi())
-//  {
-//      HAL_UART_Transmit(&huart2, (uint8_t*)"WiFi connect retry\r\n", 20, 100);
-//      wifi_try++;
-//      delay_ms(1000);
-//  }
+  while (wifi_try < 5 && !ESP8266_ConnectWiFi())
+  {
+      HAL_UART_Transmit(&huart2, (uint8_t*)"WiFi connect retry\r\n", 20, 100);
+      wifi_try++;
+      delay_ms(1000);
+  }
   //上云
-	//ESP8266_ConnectCloud();
+	ESP8266_ConnectCloud();
+	ESP8266_MQTT_Subscribe(MQTT_TOPIC_SET,0);
   while (1)
   {
     /* USER CODE END WHILE */

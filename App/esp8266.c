@@ -305,7 +305,7 @@ bool ESP8266_ConnectCloud(void)
         delay_ms(500);
         
         // 发送长命令，增加超时时间到 2000ms
-        HAL_UART_Transmit(&huart1, (uint8_t *)mqtt_user_cfg, strlen(mqtt_user_cfg), 2000);
+			HAL_UART_Transmit(&huart1, (uint8_t *)mqtt_user_cfg, strlen(mqtt_user_cfg), 5000);   //这里是超长命令，需要更多的演示
         
         // 给ESP8266更多时间处理长命令
         delay_ms(500);
