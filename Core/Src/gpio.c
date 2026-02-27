@@ -98,17 +98,11 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(DS1302_CLK_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : HC_SR505_1_Pin HC_SR505_3_Pin */
-  GPIO_InitStruct.Pin = HC_SR505_1_Pin|HC_SR505_3_Pin;
+  /*Configure GPIO pins : HC_SR505_1_Pin HC_SR505_2_Pin HC_SR505_3_Pin */
+  GPIO_InitStruct.Pin = HC_SR505_1_Pin|HC_SR505_2_Pin|HC_SR505_3_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : HC_SR505_2_Pin */
-  GPIO_InitStruct.Pin = HC_SR505_2_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-  HAL_GPIO_Init(HC_SR505_2_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : DS1302_DAT_Pin DS1302_RST_Pin */
   GPIO_InitStruct.Pin = DS1302_DAT_Pin|DS1302_RST_Pin;

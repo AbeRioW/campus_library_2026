@@ -29,11 +29,12 @@
 #include "delay.h"
 #include "esp8266.h"
 #include "oled.h"
+#include "hc_sr505.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
+#define TEST 1
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -62,7 +63,6 @@ void SystemClock_Config(void);
 /* USER CODE BEGIN 0 */
 
 /* USER CODE END 0 */
-
 
 /**
   * @brief  The application entry point.
@@ -102,32 +102,45 @@ int main(void)
   Delay_Init();
 	OLED_Init();
 	
-	#if 1
-	 OLED_ShowString(0,0,(uint8_t*)"hello",8,1);
-	 OLED_ShowString(0,8,(uint8_t*)"Welcome",8,1);
-	 OLED_Refresh();
+	#if TEST
+	  //OLED TEST
+//	 OLED_ShowString(0,0,(uint8_t*)"hello",8,1);
+//	 OLED_ShowString(0,8,(uint8_t*)"Welcome",8,1);
+//	 OLED_Refresh();
+   	 HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_RESET);
 	#endif
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-	ESP8266_Init();
+	//ESP8266_Init();
 	
 
   //WIFI连接
-  while (wifi_try < 5 && !ESP8266_ConnectWiFi())
-  {
-      HAL_UART_Transmit(&huart2, (uint8_t*)"WiFi connect retry\r\n", 20, 100);
-      wifi_try++;
-      delay_ms(1000);
-  }
+//  while (wifi_try < 5 && !ESP8266_ConnectWiFi())
+//  {
+//      HAL_UART_Transmit(&huart2, (uint8_t*)"WiFi connect retry\r\n", 20, 100);
+//      wifi_try++;
+//      delay_ms(1000);
+//  }
   //上云
-	ESP8266_ConnectCloud();
+	//ESP8266_ConnectCloud();
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+		#if TEST 
+		OLED_Clear();
+	OLED_ShowString(0,0,(uint8_t*)"TEST",8,1);
+	 OLED_Refresh();
+	 //HCSR505_TEST
+	 CheckHC_SR505(HC_SR505_1_GPIO_Port, HC_SR505_1_Pin, LED1_GPIO_Port, LED1_Pin, &hc_sr505_counter1);	
+	 // 检测HC_SR505_2状态并控制LED2
+	 CheckHC_SR505(HC_SR505_2_GPIO_Port, HC_SR505_2_Pin, LED2_GPIO_Port, LED2_Pin, &hc_sr505_counter2);		
+	 // 检测HC_SR505_3状态并控制LED3
+		CheckHC_SR505(HC_SR505_3_GPIO_Port, HC_SR505_3_Pin, LED3_GPIO_Port, LED3_Pin, &hc_sr505_counter3);
+	 #endif
   }
   /* USER CODE END 3 */
 }

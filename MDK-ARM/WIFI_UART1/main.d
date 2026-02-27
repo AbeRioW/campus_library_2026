@@ -39,3 +39,4 @@ wifi_uart1\main.o: ../App/esp8266.h
 wifi_uart1\main.o: D:\Program Files\KEIL5\ARM\ARMCC\Bin\..\include\stdbool.h
 wifi_uart1\main.o: D:\Program Files\KEIL5\ARM\ARMCC\Bin\..\include\string.h
 wifi_uart1\main.o: ../App/oled.h
+wifi_uart1\main.o: ../App/hc_sr505.h

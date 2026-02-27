@@ -829,6 +829,16 @@
               <FileType>1</FileType>
               <FilePath>..\App\uln2003.c</FilePath>
             </File>
+            <File>
+              <FileName>hc_sr505.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\App\hc_sr505.c</FilePath>
+            </File>
+            <File>
+              <FileName>hc_sr505.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\App\hc_sr505.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
