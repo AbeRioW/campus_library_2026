@@ -1,0 +1,193 @@
+#include "uln2003.h"
+
+// 四相八拍控制序列
+static const uint8_t ULN2003_Seq[8] = {
+    0x01, // A相通电
+    0x03, // A相和B相通电
+    0x02, // B相通电
+    0x06, // B相和C相通电
+    0x04, // C相通电
+    0x0C, // C相和D相通电
+    0x08, // D相通电
+    0x09  // D相和A相通电
+};
+
+// 当前速度（单位：ms/步）
+static uint16_t uln2003_speed = ULN2003_SPEED_MEDIUM;
+
+// 延时函数
+void ULN2003_Delay(uint16_t ms)
+{
+    HAL_Delay(ms);
+}
+
+// 设置步进电机的相状态
+void ULN2003_SetPhase(uint8_t phase)
+{
+    // 设置IN1
+    if (phase & 0x01)
+    {
+        HAL_GPIO_WritePin(ULN2003_IN1_GPIO_Port, ULN2003_IN1_Pin, GPIO_PIN_SET);
+    }
+    else
+    {
+        HAL_GPIO_WritePin(ULN2003_IN1_GPIO_Port, ULN2003_IN1_Pin, GPIO_PIN_RESET);
+    }
+    
+    // 设置IN2
+    if (phase & 0x02)
+    {
+        HAL_GPIO_WritePin(ULN2003_IN2_GPIO_Port, ULN2003_IN2_Pin, GPIO_PIN_SET);
+    }
+    else
+    {
+        HAL_GPIO_WritePin(ULN2003_IN2_GPIO_Port, ULN2003_IN2_Pin, GPIO_PIN_RESET);
+    }
+    
+    // 设置IN3
+    if (phase & 0x04)
+    {
+        HAL_GPIO_WritePin(ULN2003_IN3_GPIO_Port, ULN2003_IN3_Pin, GPIO_PIN_SET);
+    }
+    else
+    {
+        HAL_GPIO_WritePin(ULN2003_IN3_GPIO_Port, ULN2003_IN3_Pin, GPIO_PIN_RESET);
+    }
+    
+    // 设置IN4
+    if (phase & 0x08)
+    {
+        HAL_GPIO_WritePin(ULN2003_IN4_GPIO_Port, ULN2003_IN4_Pin, GPIO_PIN_SET);
+    }
+    else
+    {
+        HAL_GPIO_WritePin(ULN2003_IN4_GPIO_Port, ULN2003_IN4_Pin, GPIO_PIN_RESET);
+    }
+}
+
+/**
+  * @brief  初始化ULN2003步进电机
+  * @retval None
+  */
+void ULN2003_Init(void)
+{
+    // 初始化GPIO
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    
+    // IN1引脚
+    GPIO_InitStruct.Pin = ULN2003_IN1_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+    HAL_GPIO_Init(ULN2003_IN1_GPIO_Port, &GPIO_InitStruct);
+    
+    // IN2引脚
+    GPIO_InitStruct.Pin = ULN2003_IN2_Pin;
+    HAL_GPIO_Init(ULN2003_IN2_GPIO_Port, &GPIO_InitStruct);
+    
+    // IN3引脚
+    GPIO_InitStruct.Pin = ULN2003_IN3_Pin;
+    HAL_GPIO_Init(ULN2003_IN3_GPIO_Port, &GPIO_InitStruct);
+    
+    // IN4引脚
+    GPIO_InitStruct.Pin = ULN2003_IN4_Pin;
+    HAL_GPIO_Init(ULN2003_IN4_GPIO_Port, &GPIO_InitStruct);
+    
+    // 初始状态：所有相都不通电
+    ULN2003_SetPhase(0x00);
+}
+
+/**
+  * @brief  设置步进电机速度
+  * @param  speed: 速度，单位ms/步
+  * @retval None
+  */
+void ULN2003_SetSpeed(uint16_t speed)
+{
+    uln2003_speed = speed;
+}
+
+/**
+  * @brief  步进电机正转
+  * @param  steps: 步数
+  * @retval None
+  */
+void ULN2003_Forward(uint16_t steps)
+{
+    uint16_t i;
+    uint8_t seq_index = 0;
+    
+    for (i = 0; i < steps; i++)
+    {
+        // 设置当前相状态
+        ULN2003_SetPhase(ULN2003_Seq[seq_index]);
+        
+        // 延时
+        ULN2003_Delay(uln2003_speed);
+        
+        // 更新序列索引
+        seq_index = (seq_index + 1) % 8;
+    }
+    
+    // 停止步进电机
+    ULN2003_Stop();
+}
+
+/**
+  * @brief  步进电机反转
+  * @param  steps: 步数
+  * @retval None
+  */
+void ULN2003_Backward(uint16_t steps)
+{
+    uint16_t i;
+    uint8_t seq_index = 7;
+    
+    for (i = 0; i < steps; i++)
+    {
+        // 设置当前相状态
+        ULN2003_SetPhase(ULN2003_Seq[seq_index]);
+        
+        // 延时
+        ULN2003_Delay(uln2003_speed);
+        
+        // 更新序列索引
+        seq_index = (seq_index - 1) % 8;
+    }
+    
+    // 停止步进电机
+    ULN2003_Stop();
+}
+
+/**
+  * @brief  停止步进电机
+  * @retval None
+  */
+void ULN2003_Stop(void)
+{
+    // 所有相都不通电
+    ULN2003_SetPhase(0x00);
+}
+
+/**
+  * @brief  步进电机旋转指定角度
+  * @param  angle: 角度（0-360）
+  * @param  direction: 方向（0-反转，1-正转）
+  * @retval None
+  */
+void ULN2003_Rotate(uint16_t angle, uint8_t direction)
+{
+    // 28BYJ-48步进电机的步距角为5.625度/步，减速比为1:64
+    // 所以实际每步转动的角度为5.625/64 = 0.087890625度
+    // 转动指定角度需要的步数 = 角度 / 0.087890625
+    uint16_t steps = (uint16_t)((float)angle / 0.087890625);
+    
+    if (direction)
+    {
+        ULN2003_Forward(steps);
+    }
+    else
+    {
+        ULN2003_Backward(steps);
+    }
+}

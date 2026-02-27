@@ -1,0 +1,35 @@
+wifi_uart1\stm32f1xx_it.o: ../Core/Src/stm32f1xx_it.c
+wifi_uart1\stm32f1xx_it.o: ../Core/Inc/main.h
+wifi_uart1\stm32f1xx_it.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h
+wifi_uart1\stm32f1xx_it.o: ../Core/Inc/stm32f1xx_hal_conf.h
+wifi_uart1\stm32f1xx_it.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc.h
+wifi_uart1\stm32f1xx_it.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h
+wifi_uart1\stm32f1xx_it.o: ../Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f1xx.h
+wifi_uart1\stm32f1xx_it.o: ../Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f103xb.h
+wifi_uart1\stm32f1xx_it.o: ../Drivers/CMSIS/Include/core_cm3.h
+wifi_uart1\stm32f1xx_it.o: D:\Program Files\KEIL5\ARM\ARMCC\Bin\..\include\stdint.h
+wifi_uart1\stm32f1xx_it.o: ../Drivers/CMSIS/Include/cmsis_version.h
+wifi_uart1\stm32f1xx_it.o: ../Drivers/CMSIS/Include/cmsis_compiler.h
+wifi_uart1\stm32f1xx_it.o: ../Drivers/CMSIS/Include/cmsis_armcc.h
+wifi_uart1\stm32f1xx_it.o: ../Drivers/CMSIS/Device/ST/STM32F1xx/Include/system_stm32f1xx.h
+wifi_uart1\stm32f1xx_it.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h
+wifi_uart1\stm32f1xx_it.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h
+wifi_uart1\stm32f1xx_it.o: D:\Program Files\KEIL5\ARM\ARMCC\Bin\..\include\stddef.h
+wifi_uart1\stm32f1xx_it.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc_ex.h
+wifi_uart1\stm32f1xx_it.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio.h
+wifi_uart1\stm32f1xx_it.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio_ex.h
+wifi_uart1\stm32f1xx_it.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_exti.h
+wifi_uart1\stm32f1xx_it.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma.h
+wifi_uart1\stm32f1xx_it.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma_ex.h
+wifi_uart1\stm32f1xx_it.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_cortex.h
+wifi_uart1\stm32f1xx_it.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash.h
+wifi_uart1\stm32f1xx_it.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash_ex.h
+wifi_uart1\stm32f1xx_it.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pwr.h
+wifi_uart1\stm32f1xx_it.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h
+wifi_uart1\stm32f1xx_it.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h
+wifi_uart1\stm32f1xx_it.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h
+wifi_uart1\stm32f1xx_it.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
+wifi_uart1\stm32f1xx_it.o: ../Core/Inc/stm32f1xx_it.h
+wifi_uart1\stm32f1xx_it.o: ../App/esp8266.h
+wifi_uart1\stm32f1xx_it.o: D:\Program Files\KEIL5\ARM\ARMCC\Bin\..\include\stdbool.h
+wifi_uart1\stm32f1xx_it.o: D:\Program Files\KEIL5\ARM\ARMCC\Bin\..\include\string.h
