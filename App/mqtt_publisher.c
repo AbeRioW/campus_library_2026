@@ -103,11 +103,3 @@ void MQTT_Publish_Data(void)
     }
 }
 
-// 定时器4中断回调函数中调用发布函数
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
-    if (htim->Instance == TIM4)
-    {
-        MQTT_Publish_TriggerFromISR(); // 仅置标志
-    }
-}

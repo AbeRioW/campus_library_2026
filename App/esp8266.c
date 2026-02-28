@@ -304,30 +304,30 @@ bool ESP8266_ConnectCloud(void)
         ESP8266_Clear();
         
         // 等待ESP8266空闲
-        delay_ms(500);
+        delay_ms(1000);
         
-        // 发送长命令，增加超时时间到 2000ms
-			 HAL_UART_Transmit(&huart1, (uint8_t *)mqtt_user_cfg, strlen(mqtt_user_cfg), 5000);   //这里是超长命令，需要更多的演示
+        // 发送长命令，增加超时时间到 5000ms
+        HAL_UART_Transmit(&huart1, (uint8_t *)mqtt_user_cfg, strlen(mqtt_user_cfg), 5000);
         
         // 给ESP8266更多时间处理长命令
-        delay_ms(500);
+        delay_ms(1500);
         
         // 等待响应，增加超时时间
-        uint16_t timeOut = 5000;
+        uint16_t timeOut = 10000; // 增加到10秒
         bool got_response = false;
         
         while(timeOut--)
         {
-            if(ESP8266_WaitRecive() == REV_OK)
+            if(esp8266_cnt > 0) // 只要有数据就检查
             {
-                delay_ms(200);
+                // 等待更多字节到达
+                delay_ms(300);
                 
                 char local_buf[ESP8266_BUF_SIZE];
                 uint16_t len = esp8266_cnt;
                 if (len > ESP8266_BUF_SIZE - 1) len = ESP8266_BUF_SIZE - 1;
                 memcpy(local_buf, (const char*)esp8266_buf, len);
                 local_buf[len] = '\0';
-                HAL_UART_Transmit(&huart2, (uint8_t*)"hello", 6, 100);
                 HAL_UART_Transmit(&huart2, (uint8_t*)"--ESP RX: ", 10, 100);
                 if (len) HAL_UART_Transmit(&huart2, (uint8_t*)local_buf, strlen(local_buf), 500);
                 HAL_UART_Transmit(&huart2, (uint8_t*)"\r\n", 2, 100);
@@ -374,13 +374,13 @@ bool ESP8266_ConnectCloud(void)
         {
             mqtt_user_cfg_try++;
             HAL_UART_Transmit(&huart2, (uint8_t*)"MQTT USERCFG failed, retrying...\r\n", 33, 100);
-            delay_ms(2000); // 等待2秒后重试
+            delay_ms(3000); // 等待3秒后重试
         }
     }
     
     if(!mqtt_user_cfg_success)
     {
-        HAL_UART_Transmit(&huart2, (uint8_t*)"MQTT USERCFG failed after 5 attempts\r\n", 37, 100);
+        HAL_UART_Transmit(&huart2, (uint8_t*)"MQTT USERCFG failed after 10 attempts\r\n", 37, 100);
         return false;
     }
     
@@ -571,11 +571,13 @@ void ESP8266_ProcessMessages(void)
     // 检查 JSON 中是否包含 "LED":true
     if (strstr(json_buf, "\"LED\":true") != NULL)
     {
-        HAL_UART_Transmit(&huart2, (uint8_t*)"LED1 ON\r\n", 9, 100);
+        HAL_UART_Transmit(&huart2, (uint8_t*)"LED1 ON\r\n", 10, 100);
+			  HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_RESET);
     }
     else if (strstr(json_buf, "\"LED\":false") != NULL)
     {
-        HAL_UART_Transmit(&huart2, (uint8_t*)"LED1 OFF\r\n", 10, 100);
+        HAL_UART_Transmit(&huart2, (uint8_t*)"LED1 OFF\r\n", 9, 100);
+			HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_SET);
     }
     else
     {

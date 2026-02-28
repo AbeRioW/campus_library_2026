@@ -140,6 +140,10 @@ int main(void)
 		  HAL_UART_Transmit(&huart2, (uint8_t*)"ConnectCloud failed\r\n", 22, 100);
 		  while(1);
 	}
+	
+	// 启动定时器4，用于每秒读取DS1302时间
+	//HAL_TIM_Base_Start_IT(&htim4);
+	
 	ESP8266_MQTT_Subscribe(MQTT_TOPIC_SET,0);
   while (1)
   {

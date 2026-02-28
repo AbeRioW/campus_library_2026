@@ -43,7 +43,7 @@ void MX_TIM4_Init(void)
   htim4.Instance = TIM4;
   htim4.Init.Prescaler = 7199;
   htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim4.Init.Period = 65535;
+  htim4.Init.Period = 9999;
   htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim4) != HAL_OK)
@@ -107,5 +107,33 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* tim_baseHandle)
 }
 
 /* USER CODE BEGIN 1 */
+#include "ds1302.h"
+#include "oled.h"
+
+// 定时器4中断处理函数
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+    if (htim->Instance == TIM4)
+    {
+        // 禁用全局中断，确保 OLED 操作的原子性
+        
+        // 读取DS1302时间
+        DS1302_Time time;
+        DS1302_GetTime(&time);
+        
+        // 格式化时间字符串
+        char time_str[20];
+        sprintf(time_str, "%04d-%02d-%02d %02d:%02d:%02d", 
+                2000 + time.year, time.month, time.date, 
+                time.hour, time.minute, time.second);
+        
+        // 在OLED上显示时间
+        //OLED_Clear();
+        OLED_ShowString(0, 0, (uint8_t*)"Time:", 8, 1);
+        OLED_ShowString(0, 16, (uint8_t*)time_str, 8, 1);
+        OLED_Refresh();
+        
+    }
+}
 
 /* USER CODE END 1 */
