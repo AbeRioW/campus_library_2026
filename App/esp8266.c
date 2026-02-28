@@ -527,6 +527,13 @@ void ESP8266_ProcessMessages(void)
     HAL_UART_Transmit(&huart2, (uint8_t*)local_buf, strlen(local_buf), 500);
     HAL_UART_Transmit(&huart2, (uint8_t*)"\r\n", 2, 100);
 
+    // 检查是否是MQTT订阅消息，如果不是则直接返回
+    if (strstr(local_buf, "+MQTTSUBRECV") == NULL)
+    {
+        HAL_UART_Transmit(&huart2, (uint8_t*)"DEBUG: Not a SUBRECV message\r\n", 32, 100);
+        return;
+    }
+
     // 找到第一个 JSON 并提取完整 JSON（简单配对）
     char *p_json = strchr(local_buf, '{');
     if (!p_json) 
@@ -558,136 +565,40 @@ void ESP8266_ProcessMessages(void)
     HAL_UART_Transmit(&huart2, (uint8_t*)json_buf, strlen(json_buf), 500);
     HAL_UART_Transmit(&huart2, (uint8_t*)"\r\n", 2, 100);
 
-    // 解析 JSON
-    cJSON *root = cJSON_Parse(json_buf);
-    if (!root)
+    // 简化测试：直接处理 LED 控制
+    HAL_UART_Transmit(&huart2, (uint8_t*)"DEBUG: Using simplified LED control\r\n", 38, 100);
+    
+    // 检查 JSON 中是否包含 "LED":true
+    if (strstr(json_buf, "\"LED\":true") != NULL)
     {
-        HAL_UART_Transmit(&huart2, (uint8_t*)"cJSON parse failed\r\n", 20, 100);
-        return;
+        HAL_UART_Transmit(&huart2, (uint8_t*)"LED1 ON\r\n", 9, 100);
     }
-
-    // 取 id（用于回执）
-    const char *id_str = NULL;
-    cJSON *id_item = cJSON_GetObjectItem(root, "id");
-    if (id_item && cJSON_IsString(id_item)) id_str = id_item->valuestring;
-
-    // 解析 params
-    // 支持同时处理多个 params 字段（led1, led2 等）
-    cJSON *params = cJSON_GetObjectItem(root, "params");
-    bool handled_any = false;
-    if (params)
+    else if (strstr(json_buf, "\"LED\":false") != NULL)
     {
-        HAL_UART_Transmit(&huart2, (uint8_t*)"DEBUG: Found params object\r\n", 28, 100);
-        
-        // 处理 led1（如果存在）
-        cJSON *led1 = cJSON_GetObjectItem(params, "LED");
-        if (led1)
-        {
-            HAL_UART_Transmit(&huart2, (uint8_t*)"DEBUG: Found LED field\r\n", 26, 100);
-            
-            int action = -1;
-            if (cJSON_IsBool(led1)) 
-            {
-                HAL_UART_Transmit(&huart2, (uint8_t*)"DEBUG: LED is bool\r\n", 21, 100);
-                action = cJSON_IsTrue(led1) ? 1 : 0;
-                char action_str[20];
-                sprintf(action_str, "DEBUG: Action: %d\r\n", action);
-                HAL_UART_Transmit(&huart2, (uint8_t*)action_str, strlen(action_str), 100);
-            }
-            else if (cJSON_IsNumber(led1)) 
-            {
-                HAL_UART_Transmit(&huart2, (uint8_t*)"DEBUG: LED is number\r\n", 23, 100);
-                action = (int)cJSON_GetNumberValue(led1);
-            }
-            else if (cJSON_IsString(led1)) 
-            {
-                HAL_UART_Transmit(&huart2, (uint8_t*)"DEBUG: LED is string\r\n", 23, 100);
-                action = atoi(led1->valuestring);
-            }
-            else if (cJSON_IsObject(led1))
-            {
-                HAL_UART_Transmit(&huart2, (uint8_t*)"DEBUG: LED is object\r\n", 23, 100);
-                cJSON *v = cJSON_GetObjectItem(led1, "value");
-                if (v)
-                {
-                    if (cJSON_IsBool(v)) action = cJSON_IsTrue(v) ? 1 : 0;
-                    else if (cJSON_IsNumber(v)) action = (int)cJSON_GetNumberValue(v);
-                    else if (cJSON_IsString(v)) action = atoi(v->valuestring);
-                }
-            }
-            else
-            {
-                HAL_UART_Transmit(&huart2, (uint8_t*)"DEBUG: LED is unknown type\r\n", 29, 100);
-            }
-            
-            if (action >= 0)
-            {
-                HAL_UART_Transmit(&huart2, (uint8_t*)"DEBUG: Action is valid\r\n", 25, 100);
-                handled_any = true;
-                if (action) { 
-                //LED1_Control(1); 
-                //leds[0].state = true; 
-                HAL_UART_Transmit(&huart2, (uint8_t*)"LED1 ON\r\n", 9, 100); }
-                else       
-                {
-                        //LED1_Control(0); 
-                        //leds[0].state = false; 
-                          HAL_UART_Transmit(&huart2, (uint8_t*)"LED1 OFF\r\n", 10, 100); }
-            }
-            else
-            {
-                HAL_UART_Transmit(&huart2, (uint8_t*)"DEBUG: Action is invalid\r\n", 27, 100);
-            }
-        }
-        else
-        {
-            HAL_UART_Transmit(&huart2, (uint8_t*)"DEBUG: LED field not found\r\n", 30, 100);
-        }
-
-        // 处理 led2（如果存在）
-        cJSON *led2 = cJSON_GetObjectItem(params, "led2");
-        if (led2)
-        {
-            int action = -1;
-            if (cJSON_IsBool(led2)) action = cJSON_IsTrue(led2) ? 1 : 0;
-            else if (cJSON_IsNumber(led2)) action = (int)cJSON_GetNumberValue(led2);
-            else if (cJSON_IsString(led2)) action = atoi(led2->valuestring);
-            else if (cJSON_IsObject(led2))
-            {
-                cJSON *v = cJSON_GetObjectItem(led2, "value");
-                if (v)
-                {
-                    if (cJSON_IsBool(v)) action = cJSON_IsTrue(v) ? 1 : 0;
-                    else if (cJSON_IsNumber(v)) action = (int)cJSON_GetNumberValue(v);
-                    else if (cJSON_IsString(v)) action = atoi(v->valuestring);
-                }
-            }
-            if (action >= 0)
-            {
-//                handled_any = true;
-//                if (action) { LED2_Control(1); leds[1].state = true; HAL_UART_Transmit(&huart1, (uint8_t*)"LED2 ON\r\n", 9, 100); }
-//                else       { LED2_Control(0); leds[1].state = false; HAL_UART_Transmit(&huart1, (uint8_t*)"LED2 OFF\r\n", 10, 100); }
-            }
-        }
-
-        //处理更多 params 字段可按需添加
-        
-
-
+        HAL_UART_Transmit(&huart2, (uint8_t*)"LED1 OFF\r\n", 10, 100);
     }
     else
     {
-        HAL_UART_Transmit(&huart2, (uint8_t*)"DEBUG: No params object\r\n", 27, 100);
+        HAL_UART_Transmit(&huart2, (uint8_t*)"DEBUG: LED value not found\r\n", 30, 100);
     }
 
- 
-    // 构造并发送回执 payload，使用接收到的 id（用于 set_reply）
-        char reply_payload[128];
-        if (id_str)
+    // 构造并发送回执 payload
+    HAL_UART_Transmit(&huart2, (uint8_t*)"DEBUG: Creating reply payload\r\n", 32, 100);
+    char reply_payload[128];
+    
+    // 简单提取 id
+    char *id_start = strstr(json_buf, "\"id\":\"");
+    if (id_start)
+    {
+        id_start += 6; // 跳过 "id":" 
+        char *id_end = strchr(id_start, '"');
+        if (id_end)
         {
+            *id_end = '\0';
             snprintf(reply_payload, sizeof(reply_payload),
                      "{\"id\":\"%s\",\"code\":200,\"data\":null,\"msg\":\"success\"}",
-                     id_str);
+                     id_start);
+            *id_end = '"'; // 恢复原始字符
         }
         else
         {
@@ -695,20 +606,19 @@ void ESP8266_ProcessMessages(void)
                      "{\"id\":\"%lu\",\"code\":200,\"data\":null,\"msg\":\"success\"}",
                      (unsigned long)HAL_GetTick());
         }
-
-        // 使用已验证可用的 MQTTPUBRAW 发布回执（主题固定）
-        ESP8266_MQTT_Publish(MQTT_TOPIC_SET_REPLY, reply_payload, 0, 0); 
-
-
-    // 若没有任何字段被处理，可直接返回
-    if (!handled_any)
+    }
+    else
     {
-        HAL_UART_Transmit(&huart2, (uint8_t*)"DEBUG: No fields handled\r\n", 26, 100);
-        cJSON_Delete(root);
-        return;
+        snprintf(reply_payload, sizeof(reply_payload),
+                 "{\"id\":\"%lu\",\"code\":200,\"data\":null,\"msg\":\"success\"}",
+                 (unsigned long)HAL_GetTick());
     }
 
-
+    // 发布回执
+    HAL_UART_Transmit(&huart2, (uint8_t*)"DEBUG: Publishing reply\r\n", 27, 100);
+    ESP8266_MQTT_Publish(MQTT_TOPIC_SET_REPLY, reply_payload, 0, 0);
+    
+    HAL_UART_Transmit(&huart2, (uint8_t*)"DEBUG: Processing complete\r\n", 28, 100);
 
 
 }
