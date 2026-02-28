@@ -135,7 +135,11 @@ int main(void)
       delay_ms(1000);
   }
   //上云
-	ESP8266_ConnectCloud();
+	if(ESP8266_ConnectCloud()==false)
+	{
+		  HAL_UART_Transmit(&huart2, (uint8_t*)"ConnectCloud failed\r\n", 22, 100);
+		  while(1);
+	}
 	ESP8266_MQTT_Subscribe(MQTT_TOPIC_SET,0);
   while (1)
   {
@@ -183,6 +187,8 @@ int main(void)
      OLED_Refresh();
 	 }
 	 #endif
+	  //HAL_UART_Transmit(&huart2, (uint8_t*)"go\r\n", 4, 100);
+		ESP8266_ProcessMessages();
 		
 		
   }

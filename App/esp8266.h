@@ -11,15 +11,16 @@
 #define WIFI_PASSWORD   "jd717718"            // WiFi密码
 
 // MQTT三元组信息
-#define PRODUCT_ID      "U7ATCkY2W7"          // 产品ID
+#define PRODUCT_ID      "dU5jVg1L9b"          // 产品ID
 #define DEVICE_NAME     "test"                // 设备名称
-#define MQTT_TOKEN      "version=2018-10-31&res=products%2FU7ATCkY2W7%2Fdevices%2Ftest&et=1895228001&method=md5&sign=ELgKjC7d7DZ7zZ0qsbNyBQ%3D%3D"  // 设备token
+#define MQTT_TOKEN      "version=2018-10-31&res=products%2FdU5jVg1L9b%2Fdevices%2Ftest&et=2810377042&method=md5&sign=1wRzfPZDjJ6ztNqWYY9lIg%3D%3D"  // 设备token
 //#define MQTT_TOKEN      "cFRrYmZrVHlsdkx6UXhwd0ZBbGpBb0psYzJTdk5MMGM="  // 设备token
 
 // MQTT 主题宏定义
-#define MQTT_TOPIC_POST        "$sys/U7ATCkY2W7/test/thing/property/post"         // 发布属性主题
-#define MQTT_TOPIC_SET_REPLY   "$sys/U7ATCkY2W7/test/thing/property/set_reply"    // 回复设置主题
-#define MQTT_TOPIC_SET         "$sys/U7ATCkY2W7/test/thing/property/set"          // 订阅设置主题
+#define MQTT_TOPIC_POST        "$sys/dU5jVg1L9b/test/thing/property/post"         // 发布属性主题
+#define MQTT_TOPIC_SET_REPLY   "$sys/dU5jVg1L9b/test/thing/property/set_reply"    // 回复设置主题
+#define MQTT_TOPIC_SET         "$sys/dU5jVg1L9b/test/thing/property/set"          // 订阅设置主题
+//#define MQTT_TOPIC_SET         "$sys/U7ATCkY2W7/test/thing/property/post/reply"          // 订阅设置主题
 
 // 接收状态定义
 #define REV_OK      1

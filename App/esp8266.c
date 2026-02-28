@@ -107,6 +107,7 @@ bool ESP8266_SendCmd(const char *cmd, const char *expected_resp)
             local_buf[len] = '\0';
 
             // 调试输出完整接收内容
+					HAL_UART_Transmit(&huart2, (uint8_t*)"hello22", 8, 100);
             HAL_UART_Transmit(&huart2, (uint8_t*)"--ESP RX: ", 10, 100);
             if (len) HAL_UART_Transmit(&huart2, (uint8_t*)local_buf, strlen(local_buf), 500);
             HAL_UART_Transmit(&huart2, (uint8_t*)"\r\n", 2, 100);
@@ -288,6 +289,7 @@ bool ESP8266_ConnectCloud(void)
     // 配置MQTT用户信息，最多尝试5次
     int mqtt_user_cfg_try = 0;
     bool mqtt_user_cfg_success = false;
+    bool auto_connected = false;  // 标记是否自动连接
     
     while (mqtt_user_cfg_try < 10 && !mqtt_user_cfg_success)
     {
@@ -305,7 +307,7 @@ bool ESP8266_ConnectCloud(void)
         delay_ms(500);
         
         // 发送长命令，增加超时时间到 2000ms
-			HAL_UART_Transmit(&huart1, (uint8_t *)mqtt_user_cfg, strlen(mqtt_user_cfg), 5000);   //这里是超长命令，需要更多的演示
+			 HAL_UART_Transmit(&huart1, (uint8_t *)mqtt_user_cfg, strlen(mqtt_user_cfg), 5000);   //这里是超长命令，需要更多的演示
         
         // 给ESP8266更多时间处理长命令
         delay_ms(500);
@@ -325,7 +327,7 @@ bool ESP8266_ConnectCloud(void)
                 if (len > ESP8266_BUF_SIZE - 1) len = ESP8266_BUF_SIZE - 1;
                 memcpy(local_buf, (const char*)esp8266_buf, len);
                 local_buf[len] = '\0';
-                
+                HAL_UART_Transmit(&huart2, (uint8_t*)"hello", 6, 100);
                 HAL_UART_Transmit(&huart2, (uint8_t*)"--ESP RX: ", 10, 100);
                 if (len) HAL_UART_Transmit(&huart2, (uint8_t*)local_buf, strlen(local_buf), 500);
                 HAL_UART_Transmit(&huart2, (uint8_t*)"\r\n", 2, 100);
@@ -338,12 +340,24 @@ bool ESP8266_ConnectCloud(void)
                     break;
                 }
                 
+                if(strstr(local_buf, "+MQTTCONNECTED") != NULL)
+                {
+                    got_response = true;
+                    mqtt_user_cfg_success = true;
+                    auto_connected = true;  // 标记为自动连接
+                    ESP8266_Clear();
+                    break;
+                }
+                
                 if(strstr(local_buf, "ERROR") != NULL)
                 {
                     got_response = true;
                     ESP8266_Clear();
                     break;
                 }
+                
+                // 清空缓冲区，避免死循环打印
+                ESP8266_Clear();
             }
             delay_ms(10);
         }
@@ -351,6 +365,10 @@ bool ESP8266_ConnectCloud(void)
         if(mqtt_user_cfg_success)
         {
             HAL_UART_Transmit(&huart2, (uint8_t*)"MQTT USERCFG OK\r\n", 18, 100);
+            if(auto_connected)
+            {
+                HAL_UART_Transmit(&huart2, (uint8_t*)"MQTT auto-connected OK\r\n", 25, 100);
+            }
         }
         else
         {
@@ -366,19 +384,26 @@ bool ESP8266_ConnectCloud(void)
         return false;
     }
     
-    HAL_UART_Transmit(&huart2, (uint8_t*)"Connecting MQTT...\r\n", 20, 100);
+    // 如果没有自动连接，则手动发送连接命令
+    if(!auto_connected)
+    {
+        HAL_UART_Transmit(&huart2, (uint8_t*)"Connecting MQTT...\r\n", 20, 100);
+        
+        // 连接MQTT服务器
+        if(ESP8266_SendCmd(mqtt_conn, "+MQTTCONNECTED"))
+        {
+            HAL_UART_Transmit(&huart2, (uint8_t*)"MQTT connected OK\r\n", 20, 100);
+            return true;
+        }
+        else
+        {
+            HAL_UART_Transmit(&huart2, (uint8_t*)"MQTT connect failed\r\n", 22, 100);
+            return false;
+        }
+    }
     
-    // 连接MQTT服务器
-    if(ESP8266_SendCmd(mqtt_conn, "OK"))
-    {
-        HAL_UART_Transmit(&huart2, (uint8_t*)"MQTT connected OK\r\n", 20, 100);
-        return true;
-    }
-    else
-    {
-        HAL_UART_Transmit(&huart2, (uint8_t*)"MQTT connect failed\r\n", 22, 100);
-        return false;
-    }
+    // 已经自动连接成功
+    return true;
 }
 
 /**
@@ -391,17 +416,37 @@ bool ESP8266_MQTT_Subscribe(const char *topic, uint8_t qos)
     char cmd[256];
     snprintf(cmd, sizeof(cmd), "AT+MQTTSUB=0,\"%s\",%d\r\n", topic, qos);
 
-    // 打印到调试串口，便于比对
     HAL_UART_Transmit(&huart2, (uint8_t*)"--SEND CMD: ", 11, 100);
     HAL_UART_Transmit(&huart2, (uint8_t*)cmd, strlen(cmd), 500);
     HAL_UART_Transmit(&huart2, (uint8_t*)"\r\n", 2, 100);
-    // 第一次尝试（允许更长等待）
-    if (ESP8266_SendCmd(cmd, "OK"))
+    
+    HAL_UART_Transmit(&huart2, (uint8_t*)"Subscribing to topic...\r\n", 26, 100);
+    
+    bool sub_result = ESP8266_SendCmd(cmd, "OK");
+    
+    if (sub_result)
+    {
+        HAL_UART_Transmit(&huart2, (uint8_t*)"MQTT subscribe SUCCESS\r\n", 25, 100);
         return true;
-
-    // 若失败，短延迟后重试一次
-    delay_ms(200);
-    return ESP8266_SendCmd(cmd, "OK");
+    }
+    else
+    {
+        HAL_UART_Transmit(&huart2, (uint8_t*)"MQTT subscribe FAILED, retrying...\r\n", 36, 100);
+        delay_ms(200);
+        
+        sub_result = ESP8266_SendCmd(cmd, "OK");
+        
+        if (sub_result)
+        {
+            HAL_UART_Transmit(&huart2, (uint8_t*)"MQTT subscribe SUCCESS (retry)\r\n", 33, 100);
+            return true;
+        }
+        else
+        {
+            HAL_UART_Transmit(&huart2, (uint8_t*)"MQTT subscribe FAILED after retry\r\n", 36, 100);
+            return false;
+        }
+    }
 }
 
 /**
@@ -484,7 +529,11 @@ void ESP8266_ProcessMessages(void)
 
     // 找到第一个 JSON 并提取完整 JSON（简单配对）
     char *p_json = strchr(local_buf, '{');
-    if (!p_json) return;
+    if (!p_json) 
+    {
+        HAL_UART_Transmit(&huart2, (uint8_t*)"DEBUG: No JSON found\r\n", 24, 100);
+        return;
+    }
 
     char json_buf[ESP8266_BUF_SIZE];
     char *p = p_json;
@@ -498,7 +547,16 @@ void ESP8266_ProcessMessages(void)
         if (depth == 0) break;
     }
     json_buf[idx] = '\0';
-    if (idx == 0) return;
+    if (idx == 0)
+    {
+        HAL_UART_Transmit(&huart2, (uint8_t*)"DEBUG: Empty JSON\r\n", 21, 100);
+        return;
+    }
+
+    // 调试打印提取的 JSON
+    HAL_UART_Transmit(&huart2, (uint8_t*)"DEBUG: Extracted JSON: ", 22, 100);
+    HAL_UART_Transmit(&huart2, (uint8_t*)json_buf, strlen(json_buf), 500);
+    HAL_UART_Transmit(&huart2, (uint8_t*)"\r\n", 2, 100);
 
     // 解析 JSON
     cJSON *root = cJSON_Parse(json_buf);
@@ -519,16 +577,36 @@ void ESP8266_ProcessMessages(void)
     bool handled_any = false;
     if (params)
     {
+        HAL_UART_Transmit(&huart2, (uint8_t*)"DEBUG: Found params object\r\n", 28, 100);
+        
         // 处理 led1（如果存在）
-        cJSON *led1 = cJSON_GetObjectItem(params, "led1");
+        cJSON *led1 = cJSON_GetObjectItem(params, "LED");
         if (led1)
         {
+            HAL_UART_Transmit(&huart2, (uint8_t*)"DEBUG: Found LED field\r\n", 26, 100);
+            
             int action = -1;
-            if (cJSON_IsBool(led1)) action = cJSON_IsTrue(led1) ? 1 : 0;
-            else if (cJSON_IsNumber(led1)) action = (int)cJSON_GetNumberValue(led1);
-            else if (cJSON_IsString(led1)) action = atoi(led1->valuestring);
+            if (cJSON_IsBool(led1)) 
+            {
+                HAL_UART_Transmit(&huart2, (uint8_t*)"DEBUG: LED is bool\r\n", 21, 100);
+                action = cJSON_IsTrue(led1) ? 1 : 0;
+                char action_str[20];
+                sprintf(action_str, "DEBUG: Action: %d\r\n", action);
+                HAL_UART_Transmit(&huart2, (uint8_t*)action_str, strlen(action_str), 100);
+            }
+            else if (cJSON_IsNumber(led1)) 
+            {
+                HAL_UART_Transmit(&huart2, (uint8_t*)"DEBUG: LED is number\r\n", 23, 100);
+                action = (int)cJSON_GetNumberValue(led1);
+            }
+            else if (cJSON_IsString(led1)) 
+            {
+                HAL_UART_Transmit(&huart2, (uint8_t*)"DEBUG: LED is string\r\n", 23, 100);
+                action = atoi(led1->valuestring);
+            }
             else if (cJSON_IsObject(led1))
             {
+                HAL_UART_Transmit(&huart2, (uint8_t*)"DEBUG: LED is object\r\n", 23, 100);
                 cJSON *v = cJSON_GetObjectItem(led1, "value");
                 if (v)
                 {
@@ -537,12 +615,33 @@ void ESP8266_ProcessMessages(void)
                     else if (cJSON_IsString(v)) action = atoi(v->valuestring);
                 }
             }
+            else
+            {
+                HAL_UART_Transmit(&huart2, (uint8_t*)"DEBUG: LED is unknown type\r\n", 29, 100);
+            }
+            
             if (action >= 0)
             {
-//                handled_any = true;
-//                if (action) { LED1_Control(1); leds[0].state = true; HAL_UART_Transmit(&huart1, (uint8_t*)"LED1 ON\r\n", 9, 100); }
-//                else       { LED1_Control(0); leds[0].state = false; HAL_UART_Transmit(&huart1, (uint8_t*)"LED1 OFF\r\n", 10, 100); }
+                HAL_UART_Transmit(&huart2, (uint8_t*)"DEBUG: Action is valid\r\n", 25, 100);
+                handled_any = true;
+                if (action) { 
+                //LED1_Control(1); 
+                //leds[0].state = true; 
+                HAL_UART_Transmit(&huart2, (uint8_t*)"LED1 ON\r\n", 9, 100); }
+                else       
+                {
+                        //LED1_Control(0); 
+                        //leds[0].state = false; 
+                          HAL_UART_Transmit(&huart2, (uint8_t*)"LED1 OFF\r\n", 10, 100); }
             }
+            else
+            {
+                HAL_UART_Transmit(&huart2, (uint8_t*)"DEBUG: Action is invalid\r\n", 27, 100);
+            }
+        }
+        else
+        {
+            HAL_UART_Transmit(&huart2, (uint8_t*)"DEBUG: LED field not found\r\n", 30, 100);
         }
 
         // 处理 led2（如果存在）
@@ -574,6 +673,11 @@ void ESP8266_ProcessMessages(void)
         //处理更多 params 字段可按需添加
         
 
+
+    }
+    else
+    {
+        HAL_UART_Transmit(&huart2, (uint8_t*)"DEBUG: No params object\r\n", 27, 100);
     }
 
  
@@ -599,6 +703,7 @@ void ESP8266_ProcessMessages(void)
     // 若没有任何字段被处理，可直接返回
     if (!handled_any)
     {
+        HAL_UART_Transmit(&huart2, (uint8_t*)"DEBUG: No fields handled\r\n", 26, 100);
         cJSON_Delete(root);
         return;
     }
