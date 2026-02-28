@@ -32,11 +32,13 @@ compiling tim.c...
   #endif /* __ESP8266_H */
 ../Core/Src/tim.c(137): warning:  #223-D: function "sprintf" declared implicitly
           sprintf(time_str, "%04d-%02d-%02d %02d:%02d:%02d", 
-../Core/Src/tim.c: 2 warnings, 0 errors
+../Core/Src/tim.c(172): warning:  #223-D: function "snprintf" declared implicitly
+  				snprintf(payload, sizeof(payload),
+../Core/Src/tim.c: 3 warnings, 0 errors
 linking...
-Program Size: Code=17452 RO-data=7320 RW-data=32 ZI-data=3736  
+Program Size: Code=17544 RO-data=7084 RW-data=32 ZI-data=3736  
 FromELF: creating hex file...
-"WIFI_UART1\WIFI_UART1.axf" - 0 Error(s), 2 Warning(s).
+"WIFI_UART1\WIFI_UART1.axf" - 0 Error(s), 3 Warning(s).
 
 <h2>Software Packages used:</h2>
 

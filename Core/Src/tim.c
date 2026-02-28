@@ -168,18 +168,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
         {
             timer_count = 0;
             
-            // 直接使用串口1发送固定的完整命令，测试发布是否成功
-            // 使用与串口助手完全相同的命令格式，确保双引号和反斜杠正确转义
-            // AT+MQTTPUB=0,"$sys/dU5jVg1L9b/test/thing/property/post","{\"id\":\"123\",\"params\":{\"temp\":{\"value\":36.9}}}",0,0
-            const char *fixed_cmd = "AT+MQTTPUB=0,\"$sys/dU5jVg1L9b/test/thing/property/post\",\"{\\\"id\\\":\\\"123\\\"\\,\\\"params\\\":{\\\"temp\\\":{\\\"value\\\":36.9}}}\",0,0\r\n";
-            
-            // 调试打印发送的命令
-            HAL_UART_Transmit(&huart2, (uint8_t*)"--SEND CMD:", 11, 100);
-            HAL_UART_Transmit(&huart2, (uint8_t*)fixed_cmd, strlen(fixed_cmd), 500);
-            HAL_UART_Transmit(&huart2, (uint8_t*)"\r\n", 2, 100);
-            
-            // 发送命令到串口1
-            HAL_UART_Transmit(&huart1, (uint8_t*)fixed_cmd, strlen(fixed_cmd), 2000);
+					char payload[256];
+				snprintf(payload, sizeof(payload),
+             "{\\\"id\\\":\\\"123\\\"\\,\\\"params\\\":{\\\"temp\\\":{\\\"value\\\":31.1}}}");
+    
+    ESP8266_MQTT_Publish(MQTT_TOPIC_POST, payload, 0, 0);
             
             // 简单的完成提示
             HAL_UART_Transmit(&huart2, (uint8_t*)"--PUBLISH DONE\r\n", 15, 100);

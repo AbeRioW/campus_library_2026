@@ -461,17 +461,21 @@ bool ESP8266_MQTT_Publish(const char *topic, const char *payload, uint8_t qos, u
 {
     if(!topic || !payload) return false;
 
-    // 直接发送固定的完整命令，测试发布是否成功
-    const char *fixed_cmd = "AT+MQTTPUB=0,\"$sys/dU5jVg1L9b/test/thing/property/post\",\"{\"id\":\"123\",\"params\":{\"temp\":{\"value\":25.8}}}\",0,0\r\n";
+    char cmd[512];
+    
+    // 构造命令，使用与 tim.c 相同的格式，确保双引号和反斜杠正确转义
+    // 格式：AT+MQTTPUB=0,"topic","payload",<qos>,<retain>
+    snprintf(cmd, sizeof(cmd), "AT+MQTTPUB=0,\"%s\",\"%s\",%d,%d\r\n", 
+             topic, payload, qos, retain);
 
     // 调试打印发送的命令
     HAL_UART_Transmit(&huart2, (uint8_t*)"--SEND CMD:", 11, 100);
-    HAL_UART_Transmit(&huart2, (uint8_t*)fixed_cmd, strlen(fixed_cmd), 500);
+    HAL_UART_Transmit(&huart2, (uint8_t*)cmd, strlen(cmd), 500);
     HAL_UART_Transmit(&huart2, (uint8_t*)"\r\n", 2, 100);
 
     // 清空接收缓存并发送命令
     ESP8266_Clear();
-    HAL_UART_Transmit(&huart1, (uint8_t*)fixed_cmd, strlen(fixed_cmd), 4000);
+    HAL_UART_Transmit(&huart1, (uint8_t*)cmd, strlen(cmd), 4000);
 
     // 等待 OK 或 ERROR（最多 5s）
     if(ESP8266_WaitForStr("OK", 5000))
