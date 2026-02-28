@@ -18,9 +18,9 @@
 
 // MQTT 主题宏定义
 #define MQTT_TOPIC_POST        "$sys/dU5jVg1L9b/test/thing/property/post"         // 发布属性主题
+#define MQTT_TOPIC_POST_REPLY  "$sys/dU5jVg1L9b/test/thing/property/post/reply"   // 发布属性回复主题
 #define MQTT_TOPIC_SET_REPLY   "$sys/dU5jVg1L9b/test/thing/property/set_reply"    // 回复设置主题
 #define MQTT_TOPIC_SET         "$sys/dU5jVg1L9b/test/thing/property/set"          // 订阅设置主题
-//#define MQTT_TOPIC_SET         "$sys/U7ATCkY2W7/test/thing/property/post/reply"          // 订阅设置主题
 
 // 接收状态定义
 #define REV_OK      1

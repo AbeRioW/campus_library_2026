@@ -461,35 +461,20 @@ bool ESP8266_MQTT_Publish(const char *topic, const char *payload, uint8_t qos, u
 {
     if(!topic || !payload) return false;
 
-    uint32_t payload_len = strlen(payload);
-    char cmd[256];
-
-    // 构造带长度的命令（firmware 支持此格式时会返回 '>' 提示）
-    // 格式：AT+MQTTPUB=0,"topic",<len>,<qos>,<retain>
-    snprintf(cmd, sizeof(cmd), "AT+MQTTPUBRAW=0,\"%s\",%lu,%d,%d\r\n", topic, (unsigned long)payload_len, qos, retain);
+    // 直接发送固定的完整命令，测试发布是否成功
+    const char *fixed_cmd = "AT+MQTTPUB=0,\"$sys/dU5jVg1L9b/test/thing/property/post\",\"{\"id\":\"123\",\"params\":{\"temp\":{\"value\":25.8}}}\",0,0\r\n";
 
     // 调试打印发送的命令
     HAL_UART_Transmit(&huart2, (uint8_t*)"--SEND CMD:", 11, 100);
-    HAL_UART_Transmit(&huart2, (uint8_t*)cmd, strlen(cmd), 500);
+    HAL_UART_Transmit(&huart2, (uint8_t*)fixed_cmd, strlen(fixed_cmd), 500);
     HAL_UART_Transmit(&huart2, (uint8_t*)"\r\n", 2, 100);
 
     // 清空接收缓存并发送命令
     ESP8266_Clear();
-    HAL_UART_Transmit(&huart1, (uint8_t*)cmd, strlen(cmd), 1000);
+    HAL_UART_Transmit(&huart1, (uint8_t*)fixed_cmd, strlen(fixed_cmd), 4000);
 
-    // 等待 '>' 提示，给较长超时（例如 5s）
-    if(!ESP8266_WaitForStr(">", 5000))
-    {
-        // 未收到 '>'，打印当前缓冲便于排查
-        HAL_UART_Transmit(&huart1, (uint8_t*)"--ESP no prompt\r\n", 18, 100);
-        return false;
-    }
-
-    // 发送原始 payload（不再加外层双引号）
-    HAL_UART_Transmit(&huart1, (uint8_t*)payload, payload_len, 2000);
-
-    // 发送完 payload 后，等待 OK 或 ERROR（最多 8s）
-    if(ESP8266_WaitForStr("OK", 8000))
+    // 等待 OK 或 ERROR（最多 5s）
+    if(ESP8266_WaitForStr("OK", 5000))
     {
         return true;
     }

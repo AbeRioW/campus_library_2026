@@ -30,6 +30,11 @@ wifi_uart1\tim.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h
 wifi_uart1\tim.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h
 wifi_uart1\tim.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h
 wifi_uart1\tim.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
+wifi_uart1\tim.o: ../Core/Inc/usart.h
 wifi_uart1\tim.o: ../App/ds1302.h
 wifi_uart1\tim.o: ../App/oled.h
 wifi_uart1\tim.o: ../Core/Inc/gpio.h
+wifi_uart1\tim.o: ../App/esp8266.h
+wifi_uart1\tim.o: D:\Program Files\KEIL5\ARM\ARMCC\Bin\..\include\stdbool.h
+wifi_uart1\tim.o: D:\Program Files\KEIL5\ARM\ARMCC\Bin\..\include\string.h
+wifi_uart1\tim.o: D:\Program Files\KEIL5\ARM\ARMCC\Bin\..\include\time.h

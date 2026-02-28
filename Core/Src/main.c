@@ -141,11 +141,18 @@ int main(void)
 		  while(1);
 	}
 		
-	if(!ESP8266_MQTT_Subscribe(MQTT_TOPIC_SET,0))
+	// 订阅发布属性回复主题（OneNET要求）
+	if(!ESP8266_MQTT_Subscribe(MQTT_TOPIC_POST_REPLY,1))
 	{
-		  HAL_UART_Transmit(&huart2, (uint8_t*)"MQTT subscribe failed\r\n", 22, 100);
+		  HAL_UART_Transmit(&huart2, (uint8_t*)"MQTT subscribe post_reply failed\r\n", 32, 100);
 		  while(1);
 	}
+	
+//	if(!ESP8266_MQTT_Subscribe(MQTT_TOPIC_SET,0))
+//	{
+//		  HAL_UART_Transmit(&huart2, (uint8_t*)"MQTT subscribe failed\r\n", 22, 100);
+//		  while(1);
+//	}
 	
 	// 启动定时器4，用于每秒读取DS1302时间
 	HAL_TIM_Base_Start_IT(&htim4);
@@ -199,6 +206,20 @@ int main(void)
 		ESP8266_ProcessMessages();
 		
 		
+//		            const char *fixed_cmd = "AT+MQTTPUB=0,\"$sys/dU5jVg1L9b/test/thing/property/post\",\"{\"id\":\"123\",\"params\":{\"temp\":{\"value\":27.9}}}\",0,0";
+//            
+//            // 调试打印发送的命令
+//            HAL_UART_Transmit(&huart2, (uint8_t*)"--SEND CMD:", 11, 100);
+//            HAL_UART_Transmit(&huart2, (uint8_t*)fixed_cmd, strlen(fixed_cmd), 500);
+//            HAL_UART_Transmit(&huart2, (uint8_t*)"\r\n", 2, 100);
+//            
+//            // 发送命令到串口1
+//            HAL_UART_Transmit(&huart1, (uint8_t*)fixed_cmd, strlen(fixed_cmd),3000);
+//            
+//            // 简单的完成提示
+//            HAL_UART_Transmit(&huart2, (uint8_t*)"--PUBLISH DONE\r\n", 15, 100);
+//		       HAL_Delay(3000);
+//		
   }
   /* USER CODE END 3 */
 }
