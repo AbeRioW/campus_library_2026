@@ -82,6 +82,15 @@ int main(void)
 					uint8_t g_ucTempbuf[20]; 
 		uint32_t oled_show_time = 0;
 		uint8_t oled_show_active = 0;
+		
+		// 卡片进出状态跟踪数组，与Flash中的ID存储位置对应
+		// 0=卡片在内部（已进），1=卡片在外部（已出或未进）
+		uint8_t card_status[10] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1}; // 默认所有卡片都在外部
+		char time_str[20]; // 时间字符串缓冲区
+		
+		// 防重复检测变量
+		uint8_t last_cardid[4] = {0x00, 0x00, 0x00, 0x00}; // 上次检测到的卡号
+		uint8_t card_present = 0; // 卡片是否在场：0=不在，1=在场
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -291,36 +300,105 @@ int main(void)
 				{
 					if(PCD_Anticoll(cardid) == PCD_OK)
 					{
-						uint8_t found = Flash_FindID(cardid);
-						
-						if(found != 0xFF)
+						// 检查是否是同一张卡片且未离开
+						if(card_present && 
+						   last_cardid[0] == cardid[0] && last_cardid[1] == cardid[1] && 
+						   last_cardid[2] == cardid[2] && last_cardid[3] == cardid[3])
 						{
-							sprintf(data_show, "ID:%02X%02X%02X%02X", cardid[0], cardid[1], cardid[2], cardid[3]);
-							OLED_ShowString(0, 8, (uint8_t*)data_show, 8, 1);
-							oled_show_time = HAL_GetTick();
-							oled_show_active = 1;
-							OLED_Refresh();
-							HAL_UART_Transmit(&huart2, (uint8_t*)"Motor start\r\n", 12, 100);
-							// 使用非阻塞式启动电机
-							ULN2003_StartForward_NB(100);
-							HAL_UART_Transmit(&huart2, (uint8_t*)"Motor started (NB)\r\n", 19, 100);
+							// 同一张卡片，尚未离开，忽略此次检测
+							PCD_Halt();
 						}
 						else
 						{
-							OLED_ShowString(0, 8, (uint8_t*)"Illegal card", 8, 1);
-							oled_show_time = HAL_GetTick();
-							oled_show_active = 1;
+							// 新卡片或卡片已离开后再次靠近
+							uint8_t found = Flash_FindID(cardid);
+							
+							if(found != 0xFF)
+							{
+								// 记录当前卡片信息
+								last_cardid[0] = cardid[0];
+								last_cardid[1] = cardid[1];
+								last_cardid[2] = cardid[2];
+								last_cardid[3] = cardid[3];
+								card_present = 1;
+								
+								// 获取当前时间
+								DS1302_Time current_time;
+								DS1302_GetTime(&current_time);
+								
+								// 判断卡片状态并切换
+								if(card_status[found] == 1)
+								{
+									// 卡片在外部，现在进入
+									card_status[found] = 0;
+									sprintf(data_show, "IN %02d:%02d:%02d", current_time.hour, current_time.minute, current_time.second);
+								}
+								else
+								{
+									// 卡片在内部，现在出去
+									card_status[found] = 1;
+									sprintf(data_show, "OUT %02d:%02d:%02d", current_time.hour, current_time.minute, current_time.second);
+								}
+								
+								// 在第8行显示卡号
+								sprintf(time_str, "ID:%02X%02X%02X%02X", cardid[0], cardid[1], cardid[2], cardid[3]);
+								OLED_ShowString(0, 8, (uint8_t*)time_str, 8, 1);
+								
+								// 在第16行显示IN/OUT和时间
+								OLED_ShowString(0, 16, (uint8_t*)data_show, 8, 1);
+								
+								// 在第24行显示座位状态
+								if(card_status[found] == 0)
+								{
+									// 卡片进入，显示 Take seat 0
+									OLED_ShowString(0, 24, (uint8_t*)"Take seat 0", 8, 1);
+								}
+								else
+								{
+									// 卡片出去，显示 Leave seat 0
+									OLED_ShowString(0, 24, (uint8_t*)"Leave seat 0", 8, 1);
+								}
+								
+								oled_show_time = HAL_GetTick();
+								oled_show_active = 1;
+								OLED_Refresh();
+								HAL_UART_Transmit(&huart2, (uint8_t*)"Motor start\r\n", 12, 100);
+								// 使用非阻塞式启动电机
+								ULN2003_StartForward_NB(100);
+								HAL_UART_Transmit(&huart2, (uint8_t*)"Motor started (NB)\r\n", 19, 100);
+							}
+							else
+							{
+								OLED_ShowString(0, 8, (uint8_t*)"Illegal card", 8, 1);
+								oled_show_time = HAL_GetTick();
+								oled_show_active = 1;
+								OLED_Refresh();
+							}
+							PCD_Halt();
 						}
-						OLED_Refresh();
-						PCD_Halt();
 					}
+					else
+					{
+						// 检测不到卡片，重置在场标志
+						card_present = 0;
+					}
+				}
+				else
+				{
+					// 检测不到卡片，重置在场标志
+					card_present = 0;
 				}
 			}
 		}
 		
-		if(oled_show_active && (HAL_GetTick() - oled_show_time) > 5000)
+		if(oled_show_active && (HAL_GetTick() - oled_show_time) > 3000)
 		{
+			// 清除第8行（卡号）
 			OLED_ShowString(0, 8, (uint8_t*)"                ", 8, 1);
+			// 清除第16行（IN/OUT+时间）
+			OLED_ShowString(0, 16, (uint8_t*)"                ", 8, 1);
+			// 清除第24行（座位状态）
+			OLED_ShowString(0, 24, (uint8_t*)"                ", 8, 1);
 			OLED_Refresh();
 			oled_show_active = 0;
 		}

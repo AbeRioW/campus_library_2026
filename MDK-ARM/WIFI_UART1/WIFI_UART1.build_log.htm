@@ -34,12 +34,16 @@ compiling main.c...
   #endif
 ../App/rc522.h(151): warning:  #1-D: last line of file ends without a newline
   #endif
-../Core/Src/main.c(225): warning:  #223-D: function "sprintf" declared implicitly
+../Core/Src/main.c(234): warning:  #223-D: function "sprintf" declared implicitly
   								sprintf(data_show, "Reg:%02X%02X%02X%02X", cardid[0], cardid[1], cardid[2], cardid[3]);
-../Core/Src/main.c(269): warning:  #223-D: function "sprintf" declared implicitly
+../Core/Src/main.c(278): warning:  #223-D: function "sprintf" declared implicitly
   							sprintf(data_show, "Del:%02X%02X%02X%02X", cardid[0], cardid[1], cardid[2], cardid[3]);
-../Core/Src/main.c(298): warning:  #223-D: function "sprintf" declared implicitly
-  							sprintf(data_show, "ID:%02X%02X%02X%02X", cardid[0], cardid[1], cardid[2], cardid[3]);
+../Core/Src/main.c(334): warning:  #223-D: function "sprintf" declared implicitly
+  									sprintf(data_show, "IN %02d:%02d:%02d", current_time.hour, current_time.minute, current_time.second);
+../Core/Src/main.c(340): warning:  #223-D: function "sprintf" declared implicitly
+  									sprintf(data_show, "OUT %02d:%02d:%02d", current_time.hour, current_time.minute, current_time.second);
+../Core/Src/main.c(344): warning:  #223-D: function "sprintf" declared implicitly
+  								sprintf(time_str, "ID:%02X%02X%02X%02X", cardid[0], cardid[1], cardid[2], cardid[3]);
 ../Core/Src/main.c(79): warning:  #177-D: variable "wifi_try"  was declared but never referenced
     uint8_t wifi_try = 0, mqtt_try = 0;
 ../Core/Src/main.c(79): warning:  #177-D: variable "mqtt_try"  was declared but never referenced
@@ -48,11 +52,11 @@ compiling main.c...
   		  uint8_t cardid[4]={0x00,0x00,0x00,0x00};
 ../Core/Src/main.c(81): warning:  #177-D: variable "data_show"  was declared but never referenced
   		char data_show[20];
-../Core/Src/main.c: 10 warnings, 0 errors
+../Core/Src/main.c: 12 warnings, 0 errors
 linking...
-Program Size: Code=16852 RO-data=7008 RW-data=68 ZI-data=3772  
+Program Size: Code=17180 RO-data=7008 RW-data=68 ZI-data=3772  
 FromELF: creating hex file...
-"WIFI_UART1\WIFI_UART1.axf" - 0 Error(s), 10 Warning(s).
+"WIFI_UART1\WIFI_UART1.axf" - 0 Error(s), 12 Warning(s).
 
 <h2>Software Packages used:</h2>
 
@@ -76,7 +80,7 @@ Package Vendor: Keil
 
    * Component: ARM::CMSIS:CORE:5.6.0
       Include file:  CMSIS/Core/Include/tz_context.h
-Build Time Elapsed:  00:00:01
+Build Time Elapsed:  00:00:02
 </pre>
 </body>
 </html>
