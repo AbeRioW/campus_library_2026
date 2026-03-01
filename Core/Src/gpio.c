@@ -24,12 +24,15 @@
 /* USER CODE BEGIN 0 */
 #include "stdbool.h"
 #include "usart.h"
+#include "ds1302.h"
 int time_set_count = 0;
 bool time_up = false;
 bool time_down = false;
 
 bool nfc_register = false;
 bool nfc_delete = false;
+
+DS1302_Time set_time;
 /* USER CODE END 0 */
 
 /*----------------------------------------------------------------------------*/
@@ -107,7 +110,7 @@ void MX_GPIO_Init(void)
   /*Configure GPIO pin : TIME_DOWN_Pin */
   GPIO_InitStruct.Pin = TIME_DOWN_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
-  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(TIME_DOWN_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : DS1302_CLK_Pin */
@@ -141,13 +144,12 @@ void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 2 */
 static uint32_t last_key_time = 0;
-#define DEBOUNCE_TIME 200  // 消抖时间 200ms
+#define DEBOUNCE_TIME 200
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
 	uint32_t current_time = HAL_GetTick();
 	
-	// 消抖处理：如果距离上次按键时间小于DEBOUNCE_TIME，则忽略
 	if((current_time - last_key_time) < DEBOUNCE_TIME)
 	{
 		return;
@@ -156,27 +158,93 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 	
 	if(GPIO_Pin == TIME_SET_Pin)
 	{
-		time_set_count++;
-		if(time_set_count>6)
+		if(time_set_count == 0)
 		{
-			 time_set_count=0;
+			DS1302_GetTime(&set_time);
+		}
+		time_set_count++;
+		if(time_set_count > 6)
+		{
+			time_set_count = 0;
+			set_time.day = 1;
+			DS1302_SetTime(&set_time);
 		}
 	}
 	else if(GPIO_Pin == TIME_UP_Pin)
 	{
-		  time_up = true;
+		if(time_set_count == 1)
+		{
+			set_time.year++;
+			if(set_time.year > 99) set_time.year = 20;
+		}
+		else if(time_set_count == 2)
+		{
+			set_time.month++;
+			if(set_time.month > 12) set_time.month = 1;
+		}
+		else if(time_set_count == 3)
+		{
+			set_time.date++;
+			if(set_time.date > 31) set_time.date = 1;
+		}
+		else if(time_set_count == 4)
+		{
+			set_time.hour++;
+			if(set_time.hour > 23) set_time.hour = 0;
+		}
+		else if(time_set_count == 5)
+		{
+			set_time.minute++;
+			if(set_time.minute > 59) set_time.minute = 0;
+		}
+		else if(time_set_count == 6)
+		{
+			set_time.second++;
+			if(set_time.second > 59) set_time.second = 0;
+		}
+		time_up = true;
 	}
 	else if(GPIO_Pin == TIME_DOWN_Pin)
 	{
-		  time_down = true;
+		if(time_set_count == 1)
+		{
+			set_time.year--;
+			if(set_time.year < 20) set_time.year = 99;
+		}
+		else if(time_set_count == 2)
+		{
+			set_time.month--;
+			if(set_time.month < 1) set_time.month = 12;
+		}
+		else if(time_set_count == 3)
+		{
+			set_time.date--;
+			if(set_time.date < 1) set_time.date = 31;
+		}
+		else if(time_set_count == 4)
+		{
+			if(set_time.hour == 0) set_time.hour = 23;
+			else set_time.hour--;
+		}
+		else if(time_set_count == 5)
+		{
+			if(set_time.minute == 0) set_time.minute = 59;
+			else set_time.minute--;
+		}
+		else if(time_set_count == 6)
+		{
+			if(set_time.second == 0) set_time.second = 59;
+			else set_time.second--;
+		}
+		time_down = true;
 	}
 	else if(GPIO_Pin == NFC_REGISTER_Pin)
 	{
-		  nfc_register = true;
+		nfc_register = true;
 	}
 	else if(GPIO_Pin == NFC_DELETE_Pin)
 	{
-		  nfc_delete = true;
+		nfc_delete = true;
 		HAL_UART_Transmit(&huart2, (uint8_t *)"KEY2", 4, 100);
 	}
 }

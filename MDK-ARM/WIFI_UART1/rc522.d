@@ -33,3 +33,4 @@ wifi_uart1\rc522.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
 wifi_uart1\rc522.o: ../Core/Inc/spi.h
 wifi_uart1\rc522.o: ../Core/Inc/gpio.h
 wifi_uart1\rc522.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
+wifi_uart1\rc522.o: ../App/ds1302.h

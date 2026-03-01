@@ -32,4 +32,5 @@ wifi_uart1\oled.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h
 wifi_uart1\oled.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h
 wifi_uart1\oled.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
 wifi_uart1\oled.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
+wifi_uart1\oled.o: ../App/ds1302.h
 wifi_uart1\oled.o: ..\App\oledfont.h

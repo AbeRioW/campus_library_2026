@@ -38,4 +38,5 @@ wifi_uart1\esp8266.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
 wifi_uart1\esp8266.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
 wifi_uart1\esp8266.o: ..\App\cJSON.h
 wifi_uart1\esp8266.o: ../Core/Inc/gpio.h
+wifi_uart1\esp8266.o: ../App/ds1302.h
 wifi_uart1\esp8266.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h

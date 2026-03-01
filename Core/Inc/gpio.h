@@ -30,12 +30,15 @@ extern "C" {
 
 /* USER CODE BEGIN Includes */
 #include "stdbool.h"
+#include "ds1302.h"
 extern int time_set_count;
 extern bool time_up;
 extern bool time_down;
 
 extern bool nfc_register;
 extern bool nfc_delete;
+
+extern DS1302_Time set_time;
 /* USER CODE END Includes */
 
 /* USER CODE BEGIN Private defines */

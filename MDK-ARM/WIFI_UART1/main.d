@@ -35,6 +35,7 @@ wifi_uart1\main.o: ../Core/Inc/tim.h
 wifi_uart1\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
 wifi_uart1\main.o: ../Core/Inc/usart.h
 wifi_uart1\main.o: ../Core/Inc/gpio.h
+wifi_uart1\main.o: ../App/ds1302.h
 wifi_uart1\main.o: ../App/delay.h
 wifi_uart1\main.o: ../App/esp8266.h
 wifi_uart1\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
@@ -42,4 +43,3 @@ wifi_uart1\main.o: ../App/oled.h
 wifi_uart1\main.o: ../App/hc_sr505.h
 wifi_uart1\main.o: ../App/uln2003.h
 wifi_uart1\main.o: ../App/rc522.h
-wifi_uart1\main.o: ../App/ds1302.h
