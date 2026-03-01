@@ -36,7 +36,9 @@ extern bool time_up;
 extern bool time_down;
 
 extern bool nfc_register;
+extern bool nfc_register_mode;
 extern bool nfc_delete;
+extern bool nfc_delete_mode;
 
 extern DS1302_Time set_time;
 extern uint8_t nfc_cardid[4];

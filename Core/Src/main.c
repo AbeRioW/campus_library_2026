@@ -80,6 +80,8 @@ int main(void)
 		  uint8_t cardid[4]={0x00,0x00,0x00,0x00};
 		char data_show[20];
 					uint8_t g_ucTempbuf[20]; 
+		uint32_t oled_show_time = 0;
+		uint8_t oled_show_active = 0;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -166,9 +168,16 @@ int main(void)
 		uint8_t cardid[4] = {0x00, 0x00, 0x00, 0x00};
 		char data_show[20];
 		
-		if(nfc_register)
+		if(nfc_register_mode && nfc_delete_mode)
 		{
-			nfc_register = false;
+			HAL_UART_Transmit(&huart2, (uint8_t*)"ERROR: Both modes ON\r\n", 22, 100);
+			nfc_register_mode = false;
+			nfc_delete_mode = false;
+		}
+		
+		if(nfc_register_mode)
+		{
+			HAL_UART_Transmit(&huart2, (uint8_t*)"Reg mode\r\n", 10, 100);
 			if(PCD_Request(PICC_REQALL, g_ucTempbuf) == PCD_OK)
 			{
 				if(PCD_Anticoll(cardid) == PCD_OK)
@@ -201,41 +210,64 @@ int main(void)
 							Flash_WriteID(empty_index, cardid);
 							sprintf(data_show, "Reg:%02X%02X%02X%02X", cardid[0], cardid[1], cardid[2], cardid[3]);
 							OLED_ShowString(0, 8, (uint8_t*)data_show, 8, 1);
+							oled_show_time = HAL_GetTick();
+							oled_show_active = 1;
 						}
 						else
 						{
 							OLED_ShowString(0, 8, (uint8_t*)"Full", 8, 1);
+							oled_show_time = HAL_GetTick();
+							oled_show_active = 1;
 						}
+						OLED_Refresh();
+						PCD_Halt();
+						nfc_register_mode = false;
+						HAL_UART_Transmit(&huart2, (uint8_t*)"Reg mode exit\r\n", 15, 100);
 					}
 					else
 					{
-						OLED_ShowString(0, 8, (uint8_t*)"Exist", 8, 1);
+						OLED_ShowString(0, 8, (uint8_t*)"ID already reg", 8, 1);
+						OLED_Refresh();
+						delay_ms(1000);
+						OLED_ShowString(0, 8, (uint8_t*)"                ", 8, 1);
+						OLED_Refresh();
+						nfc_register_mode = false;
+						PCD_Halt();
+						HAL_UART_Transmit(&huart2, (uint8_t*)"Reg mode exit\r\n", 15, 100);
 					}
-					OLED_Refresh();
-					PCD_Halt();
 				}
 			}
 		}
-		else if(nfc_delete)
+		else if(nfc_delete_mode)
 		{
-			nfc_delete = false;
+			HAL_UART_Transmit(&huart2, (uint8_t*)"Del mode\r\n", 10, 100);
 			if(PCD_Request(PICC_REQALL, g_ucTempbuf) == PCD_OK)
 			{
+				HAL_UART_Transmit(&huart2, (uint8_t*)"Card detected\r\n", 15, 100);
 				if(PCD_Anticoll(cardid) == PCD_OK)
 				{
+					HAL_UART_Transmit(&huart2, (uint8_t*)"Card ID read\r\n", 14, 100);
 					uint8_t found = Flash_FindID(cardid);
 					if(found != 0xFF)
 					{
 						Flash_DeleteID(found);
+						delay_ms(500);
 						sprintf(data_show, "Del:%02X%02X%02X%02X", cardid[0], cardid[1], cardid[2], cardid[3]);
 						OLED_ShowString(0, 8, (uint8_t*)data_show, 8, 1);
+						oled_show_time = HAL_GetTick();
+						oled_show_active = 1;
 					}
 					else
 					{
-						OLED_ShowString(0, 8, (uint8_t*)"Not found", 8, 1);
+						delay_ms(500);
+						OLED_ShowString(0, 8, (uint8_t*)"Illegal card", 8, 1);
+						oled_show_time = HAL_GetTick();
+						oled_show_active = 1;
 					}
 					OLED_Refresh();
+					delay_ms(2000);
 					PCD_Halt();
+					nfc_delete_mode = false;
 				}
 			}
 		}
@@ -251,16 +283,32 @@ int main(void)
 					{
 						sprintf(data_show, "ID:%02X%02X%02X%02X", cardid[0], cardid[1], cardid[2], cardid[3]);
 						OLED_ShowString(0, 8, (uint8_t*)data_show, 8, 1);
+						oled_show_time = HAL_GetTick();
+						oled_show_active = 1;
+						OLED_Refresh();
+						HAL_UART_Transmit(&huart2, (uint8_t*)"Motor start\r\n", 12, 100);
+						ULN2003_Forward(100);
+						HAL_UART_Transmit(&huart2, (uint8_t*)"Motor done\r\n", 11, 100);
 					}
 					else
 					{
 						OLED_ShowString(0, 8, (uint8_t*)"Illegal card", 8, 1);
+						oled_show_time = HAL_GetTick();
+						oled_show_active = 1;
 					}
 					OLED_Refresh();
 					PCD_Halt();
 				}
 			}
 		}
+		
+		if(oled_show_active && (HAL_GetTick() - oled_show_time) > 5000)
+		{
+			OLED_ShowString(0, 8, (uint8_t*)"                ", 8, 1);
+			OLED_Refresh();
+			oled_show_active = 0;
+		}
+		
 		delay_ms(100);
   }
   /* USER CODE END 3 */

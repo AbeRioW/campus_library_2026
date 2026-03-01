@@ -33,7 +33,9 @@ bool time_up = false;
 bool time_down = false;
 
 bool nfc_register = false;
+bool nfc_register_mode = false;
 bool nfc_delete = false;
+bool nfc_delete_mode = false;
 
 DS1302_Time set_time;
 uint8_t nfc_cardid[4] = {0x00, 0x00, 0x00, 0x00};
@@ -245,11 +247,42 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 	}
 	else if(GPIO_Pin == NFC_REGISTER_Pin)
 	{
-		nfc_register = true;
+		if(nfc_delete_mode)
+		{
+			nfc_delete_mode = false;
+		}
+		nfc_register_mode = !nfc_register_mode;
+		if(nfc_register_mode)
+		{
+			OLED_ShowString(0, 8, (uint8_t*)"Reg mode:Wait...", 8, 1);
+			OLED_Refresh();
+		}
+		else
+		{
+			OLED_ShowString(0, 8, (uint8_t*)"                ", 8, 1);
+			OLED_Refresh();
+		}
 	}
 	else if(GPIO_Pin == NFC_DELETE_Pin)
 	{
-		nfc_delete = true;
+		if(nfc_register_mode)
+		{
+			HAL_UART_Transmit(&huart2, (uint8_t *)"Close reg mode\r\n", 16, 100);
+			nfc_register_mode = false;
+		}
+		nfc_delete_mode = !nfc_delete_mode;
+		if(nfc_delete_mode)
+		{
+			OLED_ShowString(0, 8, (uint8_t*)"Del mode:Wait...", 8, 1);
+			OLED_Refresh();
+			HAL_UART_Transmit(&huart2, (uint8_t *)"Del mode ON\r\n", 13, 100);
+		}
+		else
+		{
+			OLED_ShowString(0, 8, (uint8_t*)"                ", 8, 1);
+			OLED_Refresh();
+			HAL_UART_Transmit(&huart2, (uint8_t *)"Del mode OFF\r\n", 14, 100);
+		}
 		HAL_UART_Transmit(&huart2, (uint8_t *)"KEY2", 4, 100);
 	}
 }

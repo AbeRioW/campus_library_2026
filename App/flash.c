@@ -29,41 +29,74 @@ void Flash_WriteID(uint8_t index, uint8_t *id)
 {
 	if(index >= FLASH_ID_COUNT) return;
 	
+	uint8_t ids[40];
+	Flash_ReadIDs(ids);
+	
+	ids[index * 4 + 0] = id[0];
+	ids[index * 4 + 1] = id[1];
+	ids[index * 4 + 2] = id[2];
+	ids[index * 4 + 3] = id[3];
+	
 	HAL_FLASH_Unlock();
 	
-	if(!flash_page_erased)
+	FLASH_EraseInitTypeDef EraseInitStruct;
+	uint32_t SectorError = 0;
+	
+	EraseInitStruct.TypeErase = FLASH_TYPEERASE_PAGES;
+	EraseInitStruct.PageAddress = FLASH_PAGE_ADDR;
+	EraseInitStruct.NbPages = 1;
+	
+	HAL_FLASHEx_Erase(&EraseInitStruct, &SectorError);
+	
+	for(uint8_t i = 0; i < FLASH_ID_COUNT; i++)
 	{
-		FLASH_EraseInitTypeDef EraseInitStruct;
-		uint32_t SectorError = 0;
-		
-		EraseInitStruct.TypeErase = FLASH_TYPEERASE_PAGES;
-		EraseInitStruct.PageAddress = FLASH_PAGE_ADDR;
-		EraseInitStruct.NbPages = 1;
-		
-		HAL_FLASHEx_Erase(&EraseInitStruct, &SectorError);
-		flash_page_erased = 1;
+		uint32_t addr = FLASH_USER_START_ADDR + i * FLASH_ID_SIZE;
+		uint32_t data = ((uint32_t)ids[i * 4 + 3] << 24) | 
+		                ((uint32_t)ids[i * 4 + 2] << 16) | 
+		                ((uint32_t)ids[i * 4 + 1] << 8) | 
+		                ids[i * 4 + 0];
+		HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, addr, data);
 	}
 	
-	uint32_t addr = FLASH_USER_START_ADDR + index * FLASH_ID_SIZE;
-	uint32_t data = ((uint32_t)id[3] << 24) | ((uint32_t)id[2] << 16) | ((uint32_t)id[1] << 8) | id[0];
-	
-	HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, addr, data);
-	
 	HAL_FLASH_Lock();
+	flash_page_erased = 0;
 }
 
 void Flash_DeleteID(uint8_t index)
 {
 	if(index >= FLASH_ID_COUNT) return;
 	
+	uint8_t ids[40];
+	Flash_ReadIDs(ids);
+	
+	ids[index * 4 + 0] = 0xFF;
+	ids[index * 4 + 1] = 0xFF;
+	ids[index * 4 + 2] = 0xFF;
+	ids[index * 4 + 3] = 0xFF;
+	
 	HAL_FLASH_Unlock();
 	
-	uint32_t addr = FLASH_USER_START_ADDR + index * FLASH_ID_SIZE;
-	uint32_t data = 0xFFFFFFFF;
+	FLASH_EraseInitTypeDef EraseInitStruct;
+	uint32_t SectorError = 0;
 	
-	HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, addr, data);
+	EraseInitStruct.TypeErase = FLASH_TYPEERASE_PAGES;
+	EraseInitStruct.PageAddress = FLASH_PAGE_ADDR;
+	EraseInitStruct.NbPages = 1;
+	
+	HAL_FLASHEx_Erase(&EraseInitStruct, &SectorError);
+	
+	for(uint8_t i = 0; i < FLASH_ID_COUNT; i++)
+	{
+		uint32_t addr = FLASH_USER_START_ADDR + i * FLASH_ID_SIZE;
+		uint32_t data = ((uint32_t)ids[i * 4 + 3] << 24) | 
+		                ((uint32_t)ids[i * 4 + 2] << 16) | 
+		                ((uint32_t)ids[i * 4 + 1] << 8) | 
+		                ids[i * 4 + 0];
+		HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, addr, data);
+	}
 	
 	HAL_FLASH_Lock();
+	flash_page_erased = 0;
 }
 
 uint8_t Flash_FindID(uint8_t *id)
