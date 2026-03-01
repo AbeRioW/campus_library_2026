@@ -34,12 +34,12 @@ compiling main.c...
   #endif
 ../App/rc522.h(151): warning:  #1-D: last line of file ends without a newline
   #endif
-../Core/Src/main.c(211): warning:  #223-D: function "sprintf" declared implicitly
-  							sprintf(data_show, "Reg:%02X%02X%02X%02X", cardid[0], cardid[1], cardid[2], cardid[3]);
-../Core/Src/main.c(255): warning:  #223-D: function "sprintf" declared implicitly
-  						sprintf(data_show, "Del:%02X%02X%02X%02X", cardid[0], cardid[1], cardid[2], cardid[3]);
-../Core/Src/main.c(284): warning:  #223-D: function "sprintf" declared implicitly
-  						sprintf(data_show, "ID:%02X%02X%02X%02X", cardid[0], cardid[1], cardid[2], cardid[3]);
+../Core/Src/main.c(225): warning:  #223-D: function "sprintf" declared implicitly
+  								sprintf(data_show, "Reg:%02X%02X%02X%02X", cardid[0], cardid[1], cardid[2], cardid[3]);
+../Core/Src/main.c(269): warning:  #223-D: function "sprintf" declared implicitly
+  							sprintf(data_show, "Del:%02X%02X%02X%02X", cardid[0], cardid[1], cardid[2], cardid[3]);
+../Core/Src/main.c(298): warning:  #223-D: function "sprintf" declared implicitly
+  							sprintf(data_show, "ID:%02X%02X%02X%02X", cardid[0], cardid[1], cardid[2], cardid[3]);
 ../Core/Src/main.c(79): warning:  #177-D: variable "wifi_try"  was declared but never referenced
     uint8_t wifi_try = 0, mqtt_try = 0;
 ../Core/Src/main.c(79): warning:  #177-D: variable "mqtt_try"  was declared but never referenced
@@ -50,7 +50,7 @@ compiling main.c...
   		char data_show[20];
 ../Core/Src/main.c: 10 warnings, 0 errors
 linking...
-Program Size: Code=16684 RO-data=7008 RW-data=52 ZI-data=3772  
+Program Size: Code=16852 RO-data=7008 RW-data=68 ZI-data=3772  
 FromELF: creating hex file...
 "WIFI_UART1\WIFI_UART1.axf" - 0 Error(s), 10 Warning(s).
 

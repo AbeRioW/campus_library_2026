@@ -160,6 +160,11 @@ int main(void)
 	
 	// 启动定时器4，用于每秒读取DS1302时间
 	HAL_TIM_Base_Start_IT(&htim4);
+	
+	// 初始化NFC检测时间戳
+	uint32_t nfc_last_check_time = 0;
+	const uint32_t NFC_CHECK_INTERVAL = 100; // NFC检测间隔100ms
+	
   while (1)
   {
     /* USER CODE END WHILE */
@@ -167,137 +172,148 @@ int main(void)
     /* USER CODE BEGIN 3 */
 		uint8_t cardid[4] = {0x00, 0x00, 0x00, 0x00};
 		char data_show[20];
+		uint32_t current_time = HAL_GetTick();
 		
-		if(nfc_register_mode && nfc_delete_mode)
-		{
-			HAL_UART_Transmit(&huart2, (uint8_t*)"ERROR: Both modes ON\r\n", 22, 100);
-			nfc_register_mode = false;
-			nfc_delete_mode = false;
-		}
+		// 处理非阻塞式电机控制（每次循环都调用，确保电机转动流畅）
+		ULN2003_Handle_NB();
 		
-		if(nfc_register_mode)
+		// NFC检测使用基于时间戳的间隔控制
+		if((current_time - nfc_last_check_time) >= NFC_CHECK_INTERVAL)
 		{
-			HAL_UART_Transmit(&huart2, (uint8_t*)"Reg mode\r\n", 10, 100);
-			if(PCD_Request(PICC_REQALL, g_ucTempbuf) == PCD_OK)
+			nfc_last_check_time = current_time;
+			
+			if(nfc_register_mode && nfc_delete_mode)
 			{
-				if(PCD_Anticoll(cardid) == PCD_OK)
+				HAL_UART_Transmit(&huart2, (uint8_t*)"ERROR: Both modes ON\r\n", 22, 100);
+				nfc_register_mode = false;
+				nfc_delete_mode = false;
+			}
+			
+			if(nfc_register_mode)
+			{
+				HAL_UART_Transmit(&huart2, (uint8_t*)"Reg mode\r\n", 10, 100);
+				if(PCD_Request(PICC_REQALL, g_ucTempbuf) == PCD_OK)
 				{
-					uint8_t found = Flash_FindID(cardid);
-					if(found == 0xFF)
+					if(PCD_Anticoll(cardid) == PCD_OK)
 					{
-						uint8_t ids[40];
-						Flash_ReadIDs(ids);
-						uint8_t empty_index = 0xFF;
-						for(uint8_t i = 0; i < 10; i++)
+						uint8_t found = Flash_FindID(cardid);
+						if(found == 0xFF)
 						{
-							uint8_t empty = 1;
-							for(uint8_t j = 0; j < 4; j++)
+							uint8_t ids[40];
+							Flash_ReadIDs(ids);
+							uint8_t empty_index = 0xFF;
+							for(uint8_t i = 0; i < 10; i++)
 							{
-								if(ids[i * 4 + j] != 0xFF)
+								uint8_t empty = 1;
+								for(uint8_t j = 0; j < 4; j++)
 								{
-									empty = 0;
+									if(ids[i * 4 + j] != 0xFF)
+									{
+										empty = 0;
+										break;
+									}
+								}
+								if(empty)
+								{
+									empty_index = i;
 									break;
 								}
 							}
-							if(empty)
+							if(empty_index != 0xFF)
 							{
-								empty_index = i;
-								break;
+								Flash_WriteID(empty_index, cardid);
+								sprintf(data_show, "Reg:%02X%02X%02X%02X", cardid[0], cardid[1], cardid[2], cardid[3]);
+								OLED_ShowString(0, 8, (uint8_t*)data_show, 8, 1);
+								oled_show_time = HAL_GetTick();
+								oled_show_active = 1;
 							}
+							else
+							{
+								OLED_ShowString(0, 8, (uint8_t*)"Full", 8, 1);
+								oled_show_time = HAL_GetTick();
+								oled_show_active = 1;
+							}
+							OLED_Refresh();
+							PCD_Halt();
+							nfc_register_mode = false;
+							HAL_UART_Transmit(&huart2, (uint8_t*)"Reg mode exit\r\n", 15, 100);
 						}
-						if(empty_index != 0xFF)
+						else
 						{
-							Flash_WriteID(empty_index, cardid);
-							sprintf(data_show, "Reg:%02X%02X%02X%02X", cardid[0], cardid[1], cardid[2], cardid[3]);
+							OLED_ShowString(0, 8, (uint8_t*)"ID already reg", 8, 1);
+							OLED_Refresh();
+							delay_ms(1000);
+							OLED_ShowString(0, 8, (uint8_t*)"                ", 8, 1);
+							OLED_Refresh();
+							nfc_register_mode = false;
+							PCD_Halt();
+							HAL_UART_Transmit(&huart2, (uint8_t*)"Reg mode exit\r\n", 15, 100);
+						}
+					}
+				}
+			}
+			else if(nfc_delete_mode)
+			{
+				HAL_UART_Transmit(&huart2, (uint8_t*)"Del mode\r\n", 10, 100);
+				if(PCD_Request(PICC_REQALL, g_ucTempbuf) == PCD_OK)
+				{
+					HAL_UART_Transmit(&huart2, (uint8_t*)"Card detected\r\n", 15, 100);
+					if(PCD_Anticoll(cardid) == PCD_OK)
+					{
+						HAL_UART_Transmit(&huart2, (uint8_t*)"Card ID read\r\n", 14, 100);
+						uint8_t found = Flash_FindID(cardid);
+						if(found != 0xFF)
+						{
+							Flash_DeleteID(found);
+							delay_ms(500);
+							sprintf(data_show, "Del:%02X%02X%02X%02X", cardid[0], cardid[1], cardid[2], cardid[3]);
 							OLED_ShowString(0, 8, (uint8_t*)data_show, 8, 1);
 							oled_show_time = HAL_GetTick();
 							oled_show_active = 1;
 						}
 						else
 						{
-							OLED_ShowString(0, 8, (uint8_t*)"Full", 8, 1);
+							delay_ms(500);
+							OLED_ShowString(0, 8, (uint8_t*)"Illegal card", 8, 1);
+							oled_show_time = HAL_GetTick();
+							oled_show_active = 1;
+						}
+						OLED_Refresh();
+						delay_ms(2000);
+						PCD_Halt();
+						nfc_delete_mode = false;
+					}
+				}
+			}
+			else
+			{
+				if(PCD_Request(PICC_REQALL, g_ucTempbuf) == PCD_OK)
+				{
+					if(PCD_Anticoll(cardid) == PCD_OK)
+					{
+						uint8_t found = Flash_FindID(cardid);
+						
+						if(found != 0xFF)
+						{
+							sprintf(data_show, "ID:%02X%02X%02X%02X", cardid[0], cardid[1], cardid[2], cardid[3]);
+							OLED_ShowString(0, 8, (uint8_t*)data_show, 8, 1);
+							oled_show_time = HAL_GetTick();
+							oled_show_active = 1;
+							OLED_Refresh();
+							HAL_UART_Transmit(&huart2, (uint8_t*)"Motor start\r\n", 12, 100);
+							// 使用非阻塞式启动电机
+							ULN2003_StartForward_NB(100);
+							HAL_UART_Transmit(&huart2, (uint8_t*)"Motor started (NB)\r\n", 19, 100);
+						}
+						else
+						{
+							OLED_ShowString(0, 8, (uint8_t*)"Illegal card", 8, 1);
 							oled_show_time = HAL_GetTick();
 							oled_show_active = 1;
 						}
 						OLED_Refresh();
 						PCD_Halt();
-						nfc_register_mode = false;
-						HAL_UART_Transmit(&huart2, (uint8_t*)"Reg mode exit\r\n", 15, 100);
 					}
-					else
-					{
-						OLED_ShowString(0, 8, (uint8_t*)"ID already reg", 8, 1);
-						OLED_Refresh();
-						delay_ms(1000);
-						OLED_ShowString(0, 8, (uint8_t*)"                ", 8, 1);
-						OLED_Refresh();
-						nfc_register_mode = false;
-						PCD_Halt();
-						HAL_UART_Transmit(&huart2, (uint8_t*)"Reg mode exit\r\n", 15, 100);
-					}
-				}
-			}
-		}
-		else if(nfc_delete_mode)
-		{
-			HAL_UART_Transmit(&huart2, (uint8_t*)"Del mode\r\n", 10, 100);
-			if(PCD_Request(PICC_REQALL, g_ucTempbuf) == PCD_OK)
-			{
-				HAL_UART_Transmit(&huart2, (uint8_t*)"Card detected\r\n", 15, 100);
-				if(PCD_Anticoll(cardid) == PCD_OK)
-				{
-					HAL_UART_Transmit(&huart2, (uint8_t*)"Card ID read\r\n", 14, 100);
-					uint8_t found = Flash_FindID(cardid);
-					if(found != 0xFF)
-					{
-						Flash_DeleteID(found);
-						delay_ms(500);
-						sprintf(data_show, "Del:%02X%02X%02X%02X", cardid[0], cardid[1], cardid[2], cardid[3]);
-						OLED_ShowString(0, 8, (uint8_t*)data_show, 8, 1);
-						oled_show_time = HAL_GetTick();
-						oled_show_active = 1;
-					}
-					else
-					{
-						delay_ms(500);
-						OLED_ShowString(0, 8, (uint8_t*)"Illegal card", 8, 1);
-						oled_show_time = HAL_GetTick();
-						oled_show_active = 1;
-					}
-					OLED_Refresh();
-					delay_ms(2000);
-					PCD_Halt();
-					nfc_delete_mode = false;
-				}
-			}
-		}
-		else
-		{
-			if(PCD_Request(PICC_REQALL, g_ucTempbuf) == PCD_OK)
-			{
-				if(PCD_Anticoll(cardid) == PCD_OK)
-				{
-					uint8_t found = Flash_FindID(cardid);
-					
-					if(found != 0xFF)
-					{
-						sprintf(data_show, "ID:%02X%02X%02X%02X", cardid[0], cardid[1], cardid[2], cardid[3]);
-						OLED_ShowString(0, 8, (uint8_t*)data_show, 8, 1);
-						oled_show_time = HAL_GetTick();
-						oled_show_active = 1;
-						OLED_Refresh();
-						HAL_UART_Transmit(&huart2, (uint8_t*)"Motor start\r\n", 12, 100);
-						ULN2003_Forward(100);
-						HAL_UART_Transmit(&huart2, (uint8_t*)"Motor done\r\n", 11, 100);
-					}
-					else
-					{
-						OLED_ShowString(0, 8, (uint8_t*)"Illegal card", 8, 1);
-						oled_show_time = HAL_GetTick();
-						oled_show_active = 1;
-					}
-					OLED_Refresh();
-					PCD_Halt();
 				}
 			}
 		}
@@ -309,7 +325,8 @@ int main(void)
 			oled_show_active = 0;
 		}
 		
-		delay_ms(100);
+		// 短延时，确保主循环快速执行，电机控制流畅
+		delay_ms(5);
   }
   /* USER CODE END 3 */
 }
