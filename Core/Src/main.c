@@ -403,6 +403,9 @@ int main(void)
 			oled_show_active = 0;
 		}
 		
+		// 非阻塞式检测HC_SR505传感器
+		CheckAllHC_SR505_NB();
+		
 		// 短延时，确保主循环快速执行，电机控制流畅
 		delay_ms(5);
   }

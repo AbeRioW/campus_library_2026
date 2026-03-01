@@ -4,10 +4,17 @@
 #include "main.h"
 
 
-extern uint8_t hc_sr505_counter1; // HC_SR505_1高电平计数器
-extern uint8_t hc_sr505_counter2; // HC_SR505_2高电平计数器
-extern uint8_t hc_sr505_counter3; // HC_SR505_3高电平计数器
+extern uint8_t hc_sr505_counter1; // HC_SR505_1楂樼數骞宠鏁板櫒
+extern uint8_t hc_sr505_counter2; // HC_SR505_2楂樼數骞宠鏁板櫒
+extern uint8_t hc_sr505_counter3; // HC_SR505_3楂樼數骞宠鏁板櫒
 
+// 闃诲寮忔帴鍙ｏ紙宸插簾寮冿紝涓嶅缓璁娇鐢級
 void CheckHC_SR505(GPIO_TypeDef* sensor_port, uint16_t sensor_pin, GPIO_TypeDef* led_port, uint16_t led_pin, uint8_t* counter);
+
+// 闈為樆濉炲紡鎺ュ彛锛堟帹鑽愶級
+void CheckHC_SR505_1_NB(void);
+void CheckHC_SR505_2_NB(void);
+void CheckHC_SR505_3_NB(void);
+void CheckAllHC_SR505_NB(void);
 
 #endif
