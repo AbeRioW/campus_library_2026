@@ -41,7 +41,8 @@ extern TIM_HandleTypeDef htim4;
 void MX_TIM4_Init(void);
 
 /* USER CODE BEGIN Prototypes */
-
+extern volatile uint8_t time_update_flag;
+void show_time_from_main(void);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

@@ -28,34 +28,17 @@ Project File Date:  03/01/2026
 *** Using Compiler 'V5.06 update 6 (build 750)', folder: 'C:\Keil_v5\ARM\ARMCC\Bin'
 Build target 'WIFI_UART1'
 compiling hc_sr505.c...
-compiling main.c...
-../App/esp8266.h(54): warning:  #1-D: last line of file ends without a newline
-  #endif /* __ESP8266_H */
-../App/rc522.h(151): warning:  #1-D: last line of file ends without a newline
-  #endif
-../Core/Src/main.c(234): warning:  #223-D: function "sprintf" declared implicitly
-  								sprintf(data_show, "Reg:%02X%02X%02X%02X", cardid[0], cardid[1], cardid[2], cardid[3]);
-../Core/Src/main.c(278): warning:  #223-D: function "sprintf" declared implicitly
-  							sprintf(data_show, "Del:%02X%02X%02X%02X", cardid[0], cardid[1], cardid[2], cardid[3]);
-../Core/Src/main.c(334): warning:  #223-D: function "sprintf" declared implicitly
-  									sprintf(data_show, "IN %02d:%02d:%02d", current_time.hour, current_time.minute, current_time.second);
-../Core/Src/main.c(340): warning:  #223-D: function "sprintf" declared implicitly
-  									sprintf(data_show, "OUT %02d:%02d:%02d", current_time.hour, current_time.minute, current_time.second);
-../Core/Src/main.c(344): warning:  #223-D: function "sprintf" declared implicitly
-  								sprintf(time_str, "ID:%02X%02X%02X%02X", cardid[0], cardid[1], cardid[2], cardid[3]);
-../Core/Src/main.c(79): warning:  #177-D: variable "wifi_try"  was declared but never referenced
-    uint8_t wifi_try = 0, mqtt_try = 0;
-../Core/Src/main.c(79): warning:  #177-D: variable "mqtt_try"  was declared but never referenced
-    uint8_t wifi_try = 0, mqtt_try = 0;
-../Core/Src/main.c(80): warning:  #177-D: variable "cardid"  was declared but never referenced
-  		  uint8_t cardid[4]={0x00,0x00,0x00,0x00};
-../Core/Src/main.c(81): warning:  #177-D: variable "data_show"  was declared but never referenced
-  		char data_show[20];
-../Core/Src/main.c: 11 warnings, 0 errors
+..\App\hc_sr505.c(12): warning:  #550-D: variable "last_state1"  was set but never used
+  static uint8_t last_state1 = 0;
+..\App\hc_sr505.c(13): warning:  #550-D: variable "last_state2"  was set but never used
+  static uint8_t last_state2 = 0;
+..\App\hc_sr505.c(14): warning:  #550-D: variable "last_state3"  was set but never used
+  static uint8_t last_state3 = 0;
+..\App\hc_sr505.c: 3 warnings, 0 errors
 linking...
-Program Size: Code=17420 RO-data=7008 RW-data=88 ZI-data=3768  
+Program Size: Code=22796 RO-data=7132 RW-data=108 ZI-data=3772  
 FromELF: creating hex file...
-"WIFI_UART1\WIFI_UART1.axf" - 0 Error(s), 11 Warning(s).
+"WIFI_UART1\WIFI_UART1.axf" - 0 Error(s), 3 Warning(s).
 
 <h2>Software Packages used:</h2>
 

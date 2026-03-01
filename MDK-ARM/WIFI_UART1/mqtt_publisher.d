@@ -35,4 +35,7 @@ wifi_uart1\mqtt_publisher.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
 wifi_uart1\mqtt_publisher.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 wifi_uart1\mqtt_publisher.o: ../Core/Inc/usart.h
 wifi_uart1\mqtt_publisher.o: ../Core/Inc/main.h
+wifi_uart1\mqtt_publisher.o: ..\App\oled.h
+wifi_uart1\mqtt_publisher.o: ../Core/Inc/gpio.h
+wifi_uart1\mqtt_publisher.o: ../App/ds1302.h
 wifi_uart1\mqtt_publisher.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h

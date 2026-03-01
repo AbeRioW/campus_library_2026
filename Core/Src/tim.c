@@ -112,6 +112,19 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* tim_baseHandle)
 #include "esp8266.h"
 #include "gpio.h"
 
+volatile uint8_t time_update_flag = 0;
+DS1302_Time current_display_time;
+void show_time(DS1302_Time time);
+void show_time_from_main(void)
+{
+	if (time_update_flag)
+	{
+		time_update_flag = 0;
+		show_time(current_display_time);
+		OLED_Refresh();
+	}
+}
+
 void show_time(DS1302_Time time)
 {
 	char year_str[8], month_str[4], day_str[4], hour_str[4], minute_str[4], sec_str[4];
@@ -129,7 +142,6 @@ void show_time(DS1302_Time time)
 	OLED_ShowString(64, 0, (uint8_t*)hour_str, 8, time_set_count == 4 ? 0 : 1);
 	OLED_ShowString(80, 0, (uint8_t*)minute_str, 8, time_set_count == 5 ? 0 : 1);
 	OLED_ShowString(96, 0, (uint8_t*)sec_str, 8, time_set_count == 6 ? 0 : 1);
-	OLED_Refresh();
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
@@ -138,14 +150,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	{
 		if(time_set_count == 0)
 		{
-			DS1302_Time time;
-			DS1302_GetTime(&time);
-			show_time(time);
+			DS1302_GetTime(&current_display_time);
 		}
 		else
 		{
-			show_time(set_time);
+			current_display_time = set_time;
 		}
+		time_update_flag = 1;
 	}
 }
 

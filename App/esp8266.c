@@ -477,20 +477,33 @@ bool ESP8266_MQTT_Publish(const char *topic, const char *payload, uint8_t qos, u
     ESP8266_Clear();
     HAL_UART_Transmit(&huart1, (uint8_t*)cmd, strlen(cmd), 4000);
 
-    // 等待 OK 或 ERROR（最多 5s）
-    if(ESP8266_WaitForStr("OK", 5000))
+    // 非阻塞式等待，使用短时间轮询，让出CPU时间给其他任务
+    uint32_t start = HAL_GetTick();
+    while((HAL_GetTick() - start) < 500)  // 最多等待500ms
     {
-        return true;
+        // 检查是否收到 OK
+        uint16_t len = esp8266_cnt;
+        if (len)
+        {
+            if (len > ESP8266_BUF_SIZE - 1) len = ESP8266_BUF_SIZE - 1;
+            char check_buf[ESP8266_BUF_SIZE];
+            memcpy(check_buf, (const char*)esp8266_buf, len);
+            check_buf[len] = '\0';
+            if (strstr(check_buf, "OK") != NULL) 
+            {
+                return true;
+            }
+            if (strstr(check_buf, "ERROR") != NULL)
+            {
+                HAL_UART_Transmit(&huart2, (uint8_t*)"--ESP publish ERROR\r\n", 22, 100);
+                return false;
+            }
+        }
+        // 短暂延时让出CPU，不阻塞其他任务
+        delay_ms(1);
     }
-    // 如果收到 ERROR 或超时则失败
-    if(ESP8266_WaitForStr("ERROR", 100))
-    {
-        HAL_UART_Transmit(&huart2, (uint8_t*)"--ESP publish ERROR\r\n", 22, 100);
-    }
-    else
-    {
-        HAL_UART_Transmit(&huart2, (uint8_t*)"--ESP publish timeout\r\n", 23, 100);
-    }
+    
+    HAL_UART_Transmit(&huart2, (uint8_t*)"--ESP publish timeout\r\n", 23, 100);
     return false;
 }
 

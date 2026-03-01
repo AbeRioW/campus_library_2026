@@ -34,6 +34,7 @@
 #include "rc522.h"
 #include "ds1302.h"
 #include "flash.h"
+#include "mqtt_publisher.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -137,35 +138,35 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-//	ESP8266_Init();
+	ESP8266_Init();
 //	
 
-//  //WIFI连接
-//  while (wifi_try < 5 && !ESP8266_ConnectWiFi())
-//  {
-//      HAL_UART_Transmit(&huart2, (uint8_t*)"WiFi connect retry\r\n", 20, 100);
-//      wifi_try++;
-//      delay_ms(1000);
-//  }
-//  //上云
-//	if(ESP8266_ConnectCloud()==false)
-//	{
-//		  HAL_UART_Transmit(&huart2, (uint8_t*)"ConnectCloud failed\r\n", 22, 100);
-//		  while(1);
-//	}
-//		
-//	// 订阅发布属性回复主题（OneNET要求）
-//	if(!ESP8266_MQTT_Subscribe(MQTT_TOPIC_POST_REPLY,1))
-//	{
-//		  HAL_UART_Transmit(&huart2, (uint8_t*)"MQTT subscribe post_reply failed\r\n", 32, 100);
-//		  while(1);
-//	}
-//	
-//	if(!ESP8266_MQTT_Subscribe(MQTT_TOPIC_SET,0))
-//	{
-//		  HAL_UART_Transmit(&huart2, (uint8_t*)"MQTT subscribe failed\r\n", 22, 100);
-//		  while(1);
-//	}
+  //WIFI连接
+  while (wifi_try < 5 && !ESP8266_ConnectWiFi())
+  {
+      HAL_UART_Transmit(&huart2, (uint8_t*)"WiFi connect retry\r\n", 20, 100);
+      wifi_try++;
+      delay_ms(1000);
+  }
+  //上云
+	if(ESP8266_ConnectCloud()==false)
+	{
+		  HAL_UART_Transmit(&huart2, (uint8_t*)"ConnectCloud failed\r\n", 22, 100);
+		  while(1);
+	}
+		
+	// 订阅发布属性回复主题（OneNET要求）
+	if(!ESP8266_MQTT_Subscribe(MQTT_TOPIC_POST_REPLY,1))
+	{
+		  HAL_UART_Transmit(&huart2, (uint8_t*)"MQTT subscribe post_reply failed\r\n", 32, 100);
+		  while(1);
+	}
+	
+	if(!ESP8266_MQTT_Subscribe(MQTT_TOPIC_SET,0))
+	{
+		  HAL_UART_Transmit(&huart2, (uint8_t*)"MQTT subscribe failed\r\n", 22, 100);
+		  while(1);
+	}
 	
 	// 启动定时器4，用于每秒读取DS1302时间
 	HAL_TIM_Base_Start_IT(&htim4);
@@ -173,18 +174,23 @@ int main(void)
 	// 初始化NFC检测时间戳
 	uint32_t nfc_last_check_time = 0;
 	const uint32_t NFC_CHECK_INTERVAL = 100; // NFC检测间隔100ms
-	
+	OLED_Clear();
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+		#if 1
 		uint8_t cardid[4] = {0x00, 0x00, 0x00, 0x00};
 		char data_show[20];
 		uint32_t current_time = HAL_GetTick();
 		
 		// 处理非阻塞式电机控制（每次循环都调用，确保电机转动流畅）
 		ULN2003_Handle_NB();
+		ESP8266_ProcessMessages();
+		
+		// 处理时间显示更新（从定时器中断中移出，避免与OLED冲突）
+		show_time_from_main();
 		
 		// NFC检测使用基于时间戳的间隔控制
 		if((current_time - nfc_last_check_time) >= NFC_CHECK_INTERVAL)
@@ -362,6 +368,7 @@ int main(void)
 								oled_show_time = HAL_GetTick();
 								oled_show_active = 1;
 								OLED_Refresh();
+								
 								HAL_UART_Transmit(&huart2, (uint8_t*)"Motor start\r\n", 12, 100);
 								// 使用非阻塞式启动电机
 								ULN2003_StartForward_NB(100);
@@ -408,6 +415,9 @@ int main(void)
 		
 		// 短延时，确保主循环快速执行，电机控制流畅
 		delay_ms(5);
+		#endif
+//		MQTT_Publish_SET1("true");
+//		HAL_Delay(2000);
   }
   /* USER CODE END 3 */
 }
