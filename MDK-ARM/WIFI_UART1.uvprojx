@@ -839,6 +839,16 @@
               <FileType>5</FileType>
               <FilePath>..\App\hc_sr505.h</FilePath>
             </File>
+            <File>
+              <FileName>flash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\App\flash.c</FilePath>
+            </File>
+            <File>
+              <FileName>flash.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\App\flash.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

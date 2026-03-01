@@ -25,6 +25,9 @@
 #include "stdbool.h"
 #include "usart.h"
 #include "ds1302.h"
+#include "flash.h"
+#include "rc522.h"
+#include "oled.h"
 int time_set_count = 0;
 bool time_up = false;
 bool time_down = false;
@@ -33,6 +36,8 @@ bool nfc_register = false;
 bool nfc_delete = false;
 
 DS1302_Time set_time;
+uint8_t nfc_cardid[4] = {0x00, 0x00, 0x00, 0x00};
+uint8_t g_ucTempbuf[20];
 /* USER CODE END 0 */
 
 /*----------------------------------------------------------------------------*/

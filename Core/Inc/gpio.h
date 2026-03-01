@@ -39,6 +39,8 @@ extern bool nfc_register;
 extern bool nfc_delete;
 
 extern DS1302_Time set_time;
+extern uint8_t nfc_cardid[4];
+extern uint8_t g_ucTempbuf[20];
 /* USER CODE END Includes */
 
 /* USER CODE BEGIN Private defines */

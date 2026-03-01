@@ -33,6 +33,7 @@
 #include "uln2003.h"
 #include "rc522.h"
 #include "ds1302.h"
+#include "flash.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -113,6 +114,7 @@ int main(void)
 	OLED_Init();
 	DS1302_Init();
 	ULN2003_Init();
+	Flash_Init();
 	
 	#if TEST
 	  //OLED TEST
@@ -161,7 +163,105 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-		//ESP8266_ProcessMessages();
+		uint8_t cardid[4] = {0x00, 0x00, 0x00, 0x00};
+		char data_show[20];
+		
+		if(nfc_register)
+		{
+			nfc_register = false;
+			if(PCD_Request(PICC_REQALL, g_ucTempbuf) == PCD_OK)
+			{
+				if(PCD_Anticoll(cardid) == PCD_OK)
+				{
+					uint8_t found = Flash_FindID(cardid);
+					if(found == 0xFF)
+					{
+						uint8_t ids[40];
+						Flash_ReadIDs(ids);
+						uint8_t empty_index = 0xFF;
+						for(uint8_t i = 0; i < 10; i++)
+						{
+							uint8_t empty = 1;
+							for(uint8_t j = 0; j < 4; j++)
+							{
+								if(ids[i * 4 + j] != 0xFF)
+								{
+									empty = 0;
+									break;
+								}
+							}
+							if(empty)
+							{
+								empty_index = i;
+								break;
+							}
+						}
+						if(empty_index != 0xFF)
+						{
+							Flash_WriteID(empty_index, cardid);
+							sprintf(data_show, "Reg:%02X%02X%02X%02X", cardid[0], cardid[1], cardid[2], cardid[3]);
+							OLED_ShowString(0, 8, (uint8_t*)data_show, 8, 1);
+						}
+						else
+						{
+							OLED_ShowString(0, 8, (uint8_t*)"Full", 8, 1);
+						}
+					}
+					else
+					{
+						OLED_ShowString(0, 8, (uint8_t*)"Exist", 8, 1);
+					}
+					OLED_Refresh();
+					PCD_Halt();
+				}
+			}
+		}
+		else if(nfc_delete)
+		{
+			nfc_delete = false;
+			if(PCD_Request(PICC_REQALL, g_ucTempbuf) == PCD_OK)
+			{
+				if(PCD_Anticoll(cardid) == PCD_OK)
+				{
+					uint8_t found = Flash_FindID(cardid);
+					if(found != 0xFF)
+					{
+						Flash_DeleteID(found);
+						sprintf(data_show, "Del:%02X%02X%02X%02X", cardid[0], cardid[1], cardid[2], cardid[3]);
+						OLED_ShowString(0, 8, (uint8_t*)data_show, 8, 1);
+					}
+					else
+					{
+						OLED_ShowString(0, 8, (uint8_t*)"Not found", 8, 1);
+					}
+					OLED_Refresh();
+					PCD_Halt();
+				}
+			}
+		}
+		else
+		{
+			if(PCD_Request(PICC_REQALL, g_ucTempbuf) == PCD_OK)
+			{
+				if(PCD_Anticoll(cardid) == PCD_OK)
+				{
+					uint8_t found = Flash_FindID(cardid);
+					
+					if(found != 0xFF)
+					{
+						sprintf(data_show, "ID:%02X%02X%02X%02X", cardid[0], cardid[1], cardid[2], cardid[3]);
+						OLED_ShowString(0, 8, (uint8_t*)data_show, 8, 1);
+					}
+					else
+					{
+						OLED_ShowString(0, 8, (uint8_t*)"Illegal card", 8, 1);
+					}
+					OLED_Refresh();
+					PCD_Halt();
+				}
+			}
+		}
+		delay_ms(100);
   }
   /* USER CODE END 3 */
 }

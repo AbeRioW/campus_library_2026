@@ -33,6 +33,7 @@
 "wifi_uart1\rc522.o"
 "wifi_uart1\uln2003.o"
 "wifi_uart1\hc_sr505.o"
+"wifi_uart1\flash.o"
 --strict --scatter "WIFI_UART1\WIFI_UART1.sct"
 --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers

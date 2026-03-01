@@ -33,3 +33,7 @@ wifi_uart1\gpio.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
 wifi_uart1\gpio.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
 wifi_uart1\gpio.o: ../App/ds1302.h
 wifi_uart1\gpio.o: ../Core/Inc/usart.h
+wifi_uart1\gpio.o: ../App/flash.h
+wifi_uart1\gpio.o: ../App/rc522.h
+wifi_uart1\gpio.o: ../Core/Inc/spi.h
+wifi_uart1\gpio.o: ../App/oled.h

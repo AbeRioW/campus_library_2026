@@ -43,3 +43,4 @@ wifi_uart1\main.o: ../App/oled.h
 wifi_uart1\main.o: ../App/hc_sr505.h
 wifi_uart1\main.o: ../App/uln2003.h
 wifi_uart1\main.o: ../App/rc522.h
+wifi_uart1\main.o: ../App/flash.h
