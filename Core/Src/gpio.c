@@ -22,7 +22,14 @@
 #include "gpio.h"
 
 /* USER CODE BEGIN 0 */
+#include "stdbool.h"
+#include "usart.h"
+int time_set_count = 0;
+bool time_up = false;
+bool time_down = false;
 
+bool nfc_register = false;
+bool nfc_delete = false;
 /* USER CODE END 0 */
 
 /*----------------------------------------------------------------------------*/
@@ -133,5 +140,44 @@ void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 2 */
+static uint32_t last_key_time = 0;
+#define DEBOUNCE_TIME 200  // 消抖时间 200ms
 
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+	uint32_t current_time = HAL_GetTick();
+	
+	// 消抖处理：如果距离上次按键时间小于DEBOUNCE_TIME，则忽略
+	if((current_time - last_key_time) < DEBOUNCE_TIME)
+	{
+		return;
+	}
+	last_key_time = current_time;
+	
+	if(GPIO_Pin == TIME_SET_Pin)
+	{
+		time_set_count++;
+		if(time_set_count>6)
+		{
+			 time_set_count=0;
+		}
+	}
+	else if(GPIO_Pin == TIME_UP_Pin)
+	{
+		  time_up = true;
+	}
+	else if(GPIO_Pin == TIME_DOWN_Pin)
+	{
+		  time_down = true;
+	}
+	else if(GPIO_Pin == NFC_REGISTER_Pin)
+	{
+		  nfc_register = true;
+	}
+	else if(GPIO_Pin == NFC_DELETE_Pin)
+	{
+		  nfc_delete = true;
+		HAL_UART_Transmit(&huart2, (uint8_t *)"KEY2", 4, 100);
+	}
+}
 /* USER CODE END 2 */

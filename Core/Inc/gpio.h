@@ -29,7 +29,13 @@ extern "C" {
 #include "main.h"
 
 /* USER CODE BEGIN Includes */
+#include "stdbool.h"
+extern int time_set_count;
+extern bool time_up;
+extern bool time_down;
 
+extern bool nfc_register;
+extern bool nfc_delete;
 /* USER CODE END Includes */
 
 /* USER CODE BEGIN Private defines */
