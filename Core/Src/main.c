@@ -124,30 +124,30 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-	ESP8266_Init();
-	
+//	ESP8266_Init();
+//	
 
-  //WIFI连接
-  while (wifi_try < 5 && !ESP8266_ConnectWiFi())
-  {
-      HAL_UART_Transmit(&huart2, (uint8_t*)"WiFi connect retry\r\n", 20, 100);
-      wifi_try++;
-      delay_ms(1000);
-  }
-  //上云
-	if(ESP8266_ConnectCloud()==false)
-	{
-		  HAL_UART_Transmit(&huart2, (uint8_t*)"ConnectCloud failed\r\n", 22, 100);
-		  while(1);
-	}
-		
-	// 订阅发布属性回复主题（OneNET要求）
-	if(!ESP8266_MQTT_Subscribe(MQTT_TOPIC_POST_REPLY,1))
-	{
-		  HAL_UART_Transmit(&huart2, (uint8_t*)"MQTT subscribe post_reply failed\r\n", 32, 100);
-		  while(1);
-	}
-	
+//  //WIFI连接
+//  while (wifi_try < 5 && !ESP8266_ConnectWiFi())
+//  {
+//      HAL_UART_Transmit(&huart2, (uint8_t*)"WiFi connect retry\r\n", 20, 100);
+//      wifi_try++;
+//      delay_ms(1000);
+//  }
+//  //上云
+//	if(ESP8266_ConnectCloud()==false)
+//	{
+//		  HAL_UART_Transmit(&huart2, (uint8_t*)"ConnectCloud failed\r\n", 22, 100);
+//		  while(1);
+//	}
+//		
+//	// 订阅发布属性回复主题（OneNET要求）
+//	if(!ESP8266_MQTT_Subscribe(MQTT_TOPIC_POST_REPLY,1))
+//	{
+//		  HAL_UART_Transmit(&huart2, (uint8_t*)"MQTT subscribe post_reply failed\r\n", 32, 100);
+//		  while(1);
+//	}
+//	
 //	if(!ESP8266_MQTT_Subscribe(MQTT_TOPIC_SET,0))
 //	{
 //		  HAL_UART_Transmit(&huart2, (uint8_t*)"MQTT subscribe failed\r\n", 22, 100);
@@ -161,65 +161,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-		#if TEST 
-//		OLED_Clear();
-//	  OLED_ShowString(0,0,(uint8_t*)"TEST",8,1);
-//	  OLED_Refresh();
-		
-	  // 读取当前时间并显示
-//		DS1302_Time current_time;
-//		DS1302_GetTime(&current_time);
-		
-		// 格式化时间字符串
-//		char time_str[40];
-//		sprintf(time_str, "20%02d-%02d-%02d %02d:%02d:%02d", current_time.year, current_time.month, current_time.date,current_time.hour,current_time.minute,current_time.second);
-//		OLED_ShowString(0, 8, (uint8_t*)time_str, 8, 1);
-//		 OLED_Refresh();
-//		HAL_Delay(1000);
-//		
-//		OLED_Refresh();
-//	 //HCSR505_TEST
-//	 CheckHC_SR505(HC_SR505_1_GPIO_Port, HC_SR505_1_Pin, LED1_GPIO_Port, LED1_Pin, &hc_sr505_counter1);	
-//	 // 检测HC_SR505_2状态并控制LED2
-//	 CheckHC_SR505(HC_SR505_2_GPIO_Port, HC_SR505_2_Pin, LED2_GPIO_Port, LED2_Pin, &hc_sr505_counter2);		
-//	 // 检测HC_SR505_3状态并控制LED3
-//		CheckHC_SR505(HC_SR505_3_GPIO_Port, HC_SR505_3_Pin, LED3_GPIO_Port, LED3_Pin, &hc_sr505_counter3);
-
-		//步进电机测试
-		//ULN2003_Rotate(90,0);
-		
-		if(PCD_Request(PICC_REQALL, g_ucTempbuf)!=PCD_OK) //寻卡
-	 {
-//		PCD_Reset();
-//		PCD_AntennaOff(); 
-//		PCD_AntennaOn(); 
-//	  continue;
-	 }
-			 if(PCD_Anticoll(cardid)==PCD_OK)
-	 {
-		 sprintf(data_show,"id:%02x%02x%02x%02x",cardid[0],cardid[1],cardid[2],cardid[3]);
-	   OLED_ShowString(0,8,(uint8_t*)data_show,8,1);
-     OLED_Refresh();
-	 }
-	 #endif
-	  //HAL_UART_Transmit(&huart2, (uint8_t*)"go\r\n", 4, 100);
-		ESP8266_ProcessMessages();
-		
-		
-//		            const char *fixed_cmd = "AT+MQTTPUB=0,\"$sys/dU5jVg1L9b/test/thing/property/post\",\"{\"id\":\"123\",\"params\":{\"temp\":{\"value\":27.9}}}\",0,0";
-//            
-//            // 调试打印发送的命令
-//            HAL_UART_Transmit(&huart2, (uint8_t*)"--SEND CMD:", 11, 100);
-//            HAL_UART_Transmit(&huart2, (uint8_t*)fixed_cmd, strlen(fixed_cmd), 500);
-//            HAL_UART_Transmit(&huart2, (uint8_t*)"\r\n", 2, 100);
-//            
-//            // 发送命令到串口1
-//            HAL_UART_Transmit(&huart1, (uint8_t*)fixed_cmd, strlen(fixed_cmd),3000);
-//            
-//            // 简单的完成提示
-//            HAL_UART_Transmit(&huart2, (uint8_t*)"--PUBLISH DONE\r\n", 15, 100);
-//		       HAL_Delay(3000);
-//		
+		//ESP8266_ProcessMessages();
   }
   /* USER CODE END 3 */
 }
@@ -264,7 +206,48 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+//相关测试
+		#if TEST 
+//		OLED_Clear();
+//	  OLED_ShowString(0,0,(uint8_t*)"TEST",8,1);
+//	  OLED_Refresh();
+		
+	  // 读取当前时间并显示
+//		DS1302_Time current_time;
+//		DS1302_GetTime(&current_time);
+		
+		// 格式化时间字符串
+//		char time_str[40];
+//		sprintf(time_str, "20%02d-%02d-%02d %02d:%02d:%02d", current_time.year, current_time.month, current_time.date,current_time.hour,current_time.minute,current_time.second);
+//		OLED_ShowString(0, 8, (uint8_t*)time_str, 8, 1);
+//		 OLED_Refresh();
+//		HAL_Delay(1000);
+//		
+//		OLED_Refresh();
+//	 //HCSR505_TEST
+//	 CheckHC_SR505(HC_SR505_1_GPIO_Port, HC_SR505_1_Pin, LED1_GPIO_Port, LED1_Pin, &hc_sr505_counter1);	
+//	 // 检测HC_SR505_2状态并控制LED2
+//	 CheckHC_SR505(HC_SR505_2_GPIO_Port, HC_SR505_2_Pin, LED2_GPIO_Port, LED2_Pin, &hc_sr505_counter2);		
+//	 // 检测HC_SR505_3状态并控制LED3
+//		CheckHC_SR505(HC_SR505_3_GPIO_Port, HC_SR505_3_Pin, LED3_GPIO_Port, LED3_Pin, &hc_sr505_counter3);
 
+		//步进电机测试
+		//ULN2003_Rotate(90,0);
+		
+//		if(PCD_Request(PICC_REQALL, g_ucTempbuf)!=PCD_OK) //寻卡
+//	 {
+////		PCD_Reset();
+////		PCD_AntennaOff(); 
+////		PCD_AntennaOn(); 
+////	  continue;
+//	 }
+//			 if(PCD_Anticoll(cardid)==PCD_OK)
+//	 {
+//		 sprintf(data_show,"id:%02x%02x%02x%02x",cardid[0],cardid[1],cardid[2],cardid[3]);
+//	   OLED_ShowString(0,8,(uint8_t*)data_show,8,1);
+//     OLED_Refresh();
+//	 }
+	 #endif
 /* USER CODE END 4 */
 
 /**

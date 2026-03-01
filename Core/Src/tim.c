@@ -110,77 +110,75 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* tim_baseHandle)
 #include "ds1302.h"
 #include "oled.h"
 #include "esp8266.h"
-#include <time.h>
 
-// 全局变量
-uint16_t timer_count = 0; // 定时器计数器
-float temp_value = 5.1;     // 温度初始值（范围：5.1-40.9）
-uint32_t message_id = 1;    // 消息ID计数器
 
 // 定时器4中断处理函数
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
+	  char year_str[5],month_str[2],day_str[2],hour_str[2],minute_str[2],sec_str[2];
     if (htim->Instance == TIM4)
-    {
-        // 调试打印：定时器中断触发
-        HAL_UART_Transmit(&huart2, (uint8_t*)"--TIMER4 INTERRUPT TRIGGERED\r\n", 30, 100);
-        
-        // 禁用全局中断，确保 OLED 操作的原子性
-        //__disable_irq();
-        
+    {  
         // 读取DS1302时间
         DS1302_Time time;
-        DS1302_GetTime(&time);
-        
-        // 格式化时间字符串
-        char time_str[20];
-        sprintf(time_str, "%04d-%02d-%02d %02d:%02d:%02d", 
-                2000 + time.year, time.month, time.date, 
-                time.hour, time.minute, time.second);
-        
-        // 调试打印：时间读取成功
-        HAL_UART_Transmit(&huart2, (uint8_t*)"--TIME READ SUCCESS: ", 21, 100);
-        HAL_UART_Transmit(&huart2, (uint8_t*)time_str, strlen(time_str), 200);
-        HAL_UART_Transmit(&huart2, (uint8_t*)"\r\n", 2, 100);
-        
-        // 在OLED上显示时间
-        OLED_Clear();
-        OLED_ShowString(0, 0, (uint8_t*)"Time:", 8, 1);
-        OLED_ShowString(0, 16, (uint8_t*)time_str, 8, 1);
-        OLED_Refresh();
-        
-        // 调试打印：OLED显示完成
-        HAL_UART_Transmit(&huart2, (uint8_t*)"--OLED DISPLAY COMPLETE\r\n", 26, 100);
-        
-        // 重新启用全局中断
-        //__enable_irq();
-        
-        // 计数器递增
-        timer_count++;
-        
-        // 调试打印：计数器值
-        char count_str[20];
-        sprintf(count_str, "--TIMER COUNT: %d\r\n", timer_count);
-        HAL_UART_Transmit(&huart2, (uint8_t*)count_str, strlen(count_str), 100);
-        
-        // 每10次发送一次temp数据
-        if (timer_count >= 10)
-        {
-            timer_count = 0;
-            
-					char payload[256];
-				snprintf(payload, sizeof(payload),
-             "{\\\"id\\\":\\\"123\\\"\\,\\\"params\\\":{\\\"temp\\\":{\\\"value\\\":31.1}}}");
-    
-    ESP8266_MQTT_Publish(MQTT_TOPIC_POST, payload, 0, 0);
-            
-            // 简单的完成提示
-            HAL_UART_Transmit(&huart2, (uint8_t*)"--PUBLISH DONE\r\n", 15, 100);
-            
-            // 重置计数器，确保循环继续
-            timer_count = 0;
-        }
-        
+        DS1302_GetTime(&time);        
+        //格式化时间字符串
+			  sprintf(year_str,"%04d-",(2000+time.year));
+			  sprintf(month_str,"%02d-",time.month);
+			  sprintf(day_str,"%02d",time.date);
+			  sprintf(hour_str,"%2d:",time.hour);		;
+			  sprintf(minute_str,"%2d:",time.minute);
+			  sprintf(sec_str,"%2d",time.second);	
+        OLED_ShowString(0, 0, (uint8_t*)year_str, 8, 1);		
+			  OLED_ShowString(30, 0, (uint8_t*)month_str, 8, 1);
+			  OLED_ShowString(46, 0, (uint8_t*)day_str, 8, 1);
+			  OLED_ShowString(64, 0, (uint8_t*)hour_str, 8, 1);
+			  OLED_ShowString(80, 0, (uint8_t*)minute_str, 8, 1);
+			  OLED_ShowString(96, 0, (uint8_t*)sec_str, 8, 1);
+			  OLED_Refresh();
+//        
+//        // 调试打印：时间读取成功
+//        HAL_UART_Transmit(&huart2, (uint8_t*)"--TIME READ SUCCESS: ", 21, 100);
+//        HAL_UART_Transmit(&huart2, (uint8_t*)time_str, strlen(time_str), 200);
+//        HAL_UART_Transmit(&huart2, (uint8_t*)"\r\n", 2, 100);
+//        
+//        // 在OLED上显示时间
+//        OLED_Clear();
+//        OLED_ShowString(0, 0, (uint8_t*)"Time:", 8, 1);
+//        OLED_ShowString(0, 16, (uint8_t*)time_str, 8, 1);
+//        OLED_Refresh();
+//        
+//        // 调试打印：OLED显示完成
+//        HAL_UART_Transmit(&huart2, (uint8_t*)"--OLED DISPLAY COMPLETE\r\n", 26, 100);
+//        
+//        // 重新启用全局中断
+//        //__enable_irq();
+//        
+//        // 计数器递增
+//        timer_count++;
+//        
+//        // 调试打印：计数器值
+//        char count_str[20];
+//        sprintf(count_str, "--TIMER COUNT: %d\r\n", timer_count);
+//        HAL_UART_Transmit(&huart2, (uint8_t*)count_str, strlen(count_str), 100);
+//        
+//        // 每10次发送一次temp数据
+//        if (timer_count >= 10)
+//        {
+//            timer_count = 0;
+//            
+//					char payload[256];
+//				snprintf(payload, sizeof(payload),
+//             "{\\\"id\\\":\\\"123\\\"\\,\\\"params\\\":{\\\"temp\\\":{\\\"value\\\":31.1}}}");
+//    
+//    ESP8266_MQTT_Publish(MQTT_TOPIC_POST, payload, 0, 0);
+//            
+//            // 简单的完成提示
+//            HAL_UART_Transmit(&huart2, (uint8_t*)"--PUBLISH DONE\r\n", 15, 100);
+//            
+//            // 重置计数器，确保循环继续
+//            timer_count = 0;
+//        }
+//        
         /* 注释掉发布时间的代码
         // 计算UTC时间戳（毫秒）
         // 注意：这里简化处理，假设DS1302的时间已经是UTC时间

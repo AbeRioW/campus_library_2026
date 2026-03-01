@@ -1,6 +1,6 @@
 wifi_uart1\oled.o: ..\App\oled.c
 wifi_uart1\oled.o: ..\App\oled.h
-wifi_uart1\oled.o: D:\Program Files\KEIL5\ARM\ARMCC\Bin\..\include\stdint.h
+wifi_uart1\oled.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
 wifi_uart1\oled.o: ../Core/Inc/gpio.h
 wifi_uart1\oled.o: ../Core/Inc/main.h
 wifi_uart1\oled.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h
@@ -16,7 +16,7 @@ wifi_uart1\oled.o: ../Drivers/CMSIS/Include/cmsis_armcc.h
 wifi_uart1\oled.o: ../Drivers/CMSIS/Device/ST/STM32F1xx/Include/system_stm32f1xx.h
 wifi_uart1\oled.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h
 wifi_uart1\oled.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h
-wifi_uart1\oled.o: D:\Program Files\KEIL5\ARM\ARMCC\Bin\..\include\stddef.h
+wifi_uart1\oled.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
 wifi_uart1\oled.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc_ex.h
 wifi_uart1\oled.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio.h
 wifi_uart1\oled.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio_ex.h
