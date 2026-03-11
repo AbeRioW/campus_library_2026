@@ -355,7 +355,10 @@ int main(void)
 								OLED_ShowString(0, 8, (uint8_t*)"                ", 8, 1);
 								OLED_ShowString(0, 16, (uint8_t*)"                ", 8, 1);
 								OLED_ShowString(0, 24, (uint8_t*)"                ", 8, 1);
-								
+								OLED_ShowString(0, 32, (uint8_t*)"                ", 8, 1);
+								OLED_ShowString(0, 40, (uint8_t*)"                ", 8, 1);
+								OLED_ShowString(0, 48, (uint8_t*)"                ", 8, 1);
+								OLED_ShowString(0, 56, (uint8_t*)"                ", 8, 1);
 								// 判断卡片状态并切换
 								if(card_status[found] == 1)
 								{

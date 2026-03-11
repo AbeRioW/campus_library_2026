@@ -116,10 +116,12 @@ volatile uint8_t time_update_flag = 0;
 DS1302_Time current_display_time;
 void show_time(DS1302_Time time);
 extern uint8_t oled_show_active;
+extern bool nfc_register_mode;
+extern bool nfc_delete_mode;
 
 void show_time_from_main(void)
 {
-	if (time_update_flag && !oled_show_active)
+	if (time_update_flag)
 	{
 		time_update_flag = 0;
 		// 只更新时间显示，不清空其他行
@@ -139,13 +141,22 @@ void show_time_from_main(void)
 		OLED_ShowString(80, 0, (uint8_t*)minute_str, 8, time_set_count == 5 ? 0 : 1);
 		OLED_ShowString(96, 0, (uint8_t*)sec_str, 8, time_set_count == 6 ? 0 : 1);
 		// 清空第0行剩余部分
-		OLED_ShowString(112, 0, (uint8_t*)"                ", 8, 1);
+		OLED_ShowString(112, 0, (uint8_t*)"    ", 8, 1);
+		
+		// 只有在非注册/删除模式时才清空其他行（防止花屏）
+		if (!nfc_register_mode && !nfc_delete_mode)
+		{
+			OLED_ShowString(0, 8, (uint8_t*)"                     ", 8, 1);
+
+		}
+					OLED_ShowString(0, 16, (uint8_t*)"                     ", 8, 1);
+			OLED_ShowString(0, 24, (uint8_t*)"                     ", 8, 1);
+			OLED_ShowString(0, 32, (uint8_t*)"                     ", 8, 1);
+			OLED_ShowString(0, 40, (uint8_t*)"                     ", 8, 1);
+			OLED_ShowString(0, 48, (uint8_t*)"                     ", 8, 1);
+			OLED_ShowString(0, 56, (uint8_t*)"                     ", 8, 1);
+		
 		OLED_Refresh();
-	}
-	else if (time_update_flag)
-	{
-		// 当有其他内容显示时，只更新时间数据，不刷新显示
-		time_update_flag = 0;
 	}
 }
 
