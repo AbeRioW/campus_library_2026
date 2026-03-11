@@ -11,8 +11,8 @@
 #define OLED_SDA_Set()  HAL_GPIO_WritePin(OLED_SDA_GPIO_Port, OLED_SDA_Pin, GPIO_PIN_SET);
 
 
-#define OLED_CMD  0	//Ð´ÃüÁî
-#define OLED_DATA 1	//Ð´Êý¾Ý
+#define OLED_CMD  0	//Ð´ï¿½ï¿½ï¿½ï¿½
+#define OLED_DATA 1	//Ð´ï¿½ï¿½ï¿½ï¿½
 
 
 void OLED_ClearPoint(uint8_t x,uint8_t y);
@@ -27,6 +27,7 @@ void OLED_DisPlay_On(void);
 void OLED_DisPlay_Off(void);
 void OLED_Refresh(void);
 void OLED_Clear(void);
+void OLED_ClearLine(uint8_t line);
 void OLED_DrawPoint(uint8_t x,uint8_t y,uint8_t t);
 void OLED_DrawLine(uint8_t x1,uint8_t y1,uint8_t x2,uint8_t y2,uint8_t mode);
 void OLED_DrawCircle(uint8_t x,uint8_t y,uint8_t r);

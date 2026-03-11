@@ -254,6 +254,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 		nfc_register_mode = !nfc_register_mode;
 		if(nfc_register_mode)
 		{
+			OLED_ClearLine(1);
 			OLED_ShowString(0, 8, (uint8_t*)"Reg mode:Wait...", 8, 1);
 			OLED_Refresh();
 		}
@@ -273,6 +274,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 		nfc_delete_mode = !nfc_delete_mode;
 		if(nfc_delete_mode)
 		{
+			OLED_ClearLine(1);
 			OLED_ShowString(0, 8, (uint8_t*)"Del mode:Wait...", 8, 1);
 			OLED_Refresh();
 			HAL_UART_Transmit(&huart2, (uint8_t *)"Del mode ON\r\n", 13, 100);

@@ -55,7 +55,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+uint8_t oled_show_active = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -79,10 +79,9 @@ int main(void)
   /* USER CODE BEGIN 1 */
   uint8_t wifi_try = 0, mqtt_try = 0;
 		  uint8_t cardid[4]={0x00,0x00,0x00,0x00};
-		char data_show[20];
-					uint8_t g_ucTempbuf[20]; 
-		uint32_t oled_show_time = 0;
-		uint8_t oled_show_active = 0;
+	char data_show[20];
+			uint8_t g_ucTempbuf[20]; 
+	uint32_t oled_show_time = 0;
 		
 		// 卡片进出状态跟踪数组，与Flash中的ID存储位置对应
 		// 0=卡片在内部（已进），1=卡片在外部（已出或未进）
@@ -167,13 +166,13 @@ int main(void)
 		  HAL_UART_Transmit(&huart2, (uint8_t*)"MQTT subscribe failed\r\n", 22, 100);
 		  while(1);
 	}
-	
 	// 启动定时器4，用于每秒读取DS1302时间
 	HAL_TIM_Base_Start_IT(&htim4);
 	
 	// 初始化NFC检测时间戳
 	uint32_t nfc_last_check_time = 0;
 	const uint32_t NFC_CHECK_INTERVAL = 100; // NFC检测间隔100ms
+
 	OLED_Clear();
   while (1)
   {
@@ -238,12 +237,20 @@ int main(void)
 							{
 								Flash_WriteID(empty_index, cardid);
 								sprintf(data_show, "Reg:%02X%02X%02X%02X", cardid[0], cardid[1], cardid[2], cardid[3]);
+								// 清空第1、2、3行
+								OLED_ShowString(0, 8, (uint8_t*)"                ", 8, 1);
+								OLED_ShowString(0, 16, (uint8_t*)"                ", 8, 1);
+								OLED_ShowString(0, 24, (uint8_t*)"                ", 8, 1);
 								OLED_ShowString(0, 8, (uint8_t*)data_show, 8, 1);
 								oled_show_time = HAL_GetTick();
 								oled_show_active = 1;
 							}
 							else
 							{
+								// 清空第1、2、3行
+								OLED_ShowString(0, 8, (uint8_t*)"                ", 8, 1);
+								OLED_ShowString(0, 16, (uint8_t*)"                ", 8, 1);
+								OLED_ShowString(0, 24, (uint8_t*)"                ", 8, 1);
 								OLED_ShowString(0, 8, (uint8_t*)"Full", 8, 1);
 								oled_show_time = HAL_GetTick();
 								oled_show_active = 1;
@@ -255,6 +262,10 @@ int main(void)
 						}
 						else
 						{
+							// 清空第1、2、3行
+							OLED_ShowString(0, 8, (uint8_t*)"                ", 8, 1);
+							OLED_ShowString(0, 16, (uint8_t*)"                ", 8, 1);
+							OLED_ShowString(0, 24, (uint8_t*)"                ", 8, 1);
 							OLED_ShowString(0, 8, (uint8_t*)"ID already reg", 8, 1);
 							OLED_Refresh();
 							delay_ms(1000);
@@ -282,6 +293,10 @@ int main(void)
 							Flash_DeleteID(found);
 							delay_ms(500);
 							sprintf(data_show, "Del:%02X%02X%02X%02X", cardid[0], cardid[1], cardid[2], cardid[3]);
+							// 清空第1、2、3行
+							OLED_ShowString(0, 8, (uint8_t*)"                ", 8, 1);
+							OLED_ShowString(0, 16, (uint8_t*)"                ", 8, 1);
+							OLED_ShowString(0, 24, (uint8_t*)"                ", 8, 1);
 							OLED_ShowString(0, 8, (uint8_t*)data_show, 8, 1);
 							oled_show_time = HAL_GetTick();
 							oled_show_active = 1;
@@ -289,6 +304,10 @@ int main(void)
 						else
 						{
 							delay_ms(500);
+							// 清空第1、2、3行
+							OLED_ShowString(0, 8, (uint8_t*)"                ", 8, 1);
+							OLED_ShowString(0, 16, (uint8_t*)"                ", 8, 1);
+							OLED_ShowString(0, 24, (uint8_t*)"                ", 8, 1);
 							OLED_ShowString(0, 8, (uint8_t*)"Illegal card", 8, 1);
 							oled_show_time = HAL_GetTick();
 							oled_show_active = 1;
@@ -331,6 +350,11 @@ int main(void)
 								// 获取当前时间
 								DS1302_Time current_time;
 								DS1302_GetTime(&current_time);
+								
+								// 清空第1、2、3行
+								OLED_ShowString(0, 8, (uint8_t*)"                ", 8, 1);
+								OLED_ShowString(0, 16, (uint8_t*)"                ", 8, 1);
+								OLED_ShowString(0, 24, (uint8_t*)"                ", 8, 1);
 								
 								// 判断卡片状态并切换
 								if(card_status[found] == 1)
@@ -376,6 +400,10 @@ int main(void)
 							}
 							else
 							{
+								// 清空第1、2、3行
+								OLED_ShowString(0, 8, (uint8_t*)"                ", 8, 1);
+								OLED_ShowString(0, 16, (uint8_t*)"                ", 8, 1);
+								OLED_ShowString(0, 24, (uint8_t*)"                ", 8, 1);
 								OLED_ShowString(0, 8, (uint8_t*)"Illegal card", 8, 1);
 								oled_show_time = HAL_GetTick();
 								oled_show_active = 1;

@@ -115,19 +115,50 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* tim_baseHandle)
 volatile uint8_t time_update_flag = 0;
 DS1302_Time current_display_time;
 void show_time(DS1302_Time time);
+extern uint8_t oled_show_active;
+
 void show_time_from_main(void)
 {
-	if (time_update_flag)
+	if (time_update_flag && !oled_show_active)
 	{
 		time_update_flag = 0;
-		show_time(current_display_time);
+		// 只更新时间显示，不清空其他行
+		char year_str[8], month_str[4], day_str[4], hour_str[4], minute_str[4], sec_str[4];
+		
+		sprintf(year_str, "%04d-", (2000 + current_display_time.year));
+		sprintf(month_str, "%02d-", current_display_time.month);
+		sprintf(day_str, "%02d", current_display_time.date);
+		sprintf(hour_str, "%02d:", current_display_time.hour);
+		sprintf(minute_str, "%02d:", current_display_time.minute);
+		sprintf(sec_str, "%02d", current_display_time.second);
+		
+		OLED_ShowString(0, 0, (uint8_t*)year_str, 8, time_set_count == 1 ? 0 : 1);
+		OLED_ShowString(30, 0, (uint8_t*)month_str, 8, time_set_count == 2 ? 0 : 1);
+		OLED_ShowString(46, 0, (uint8_t*)day_str, 8, time_set_count == 3 ? 0 : 1);
+		OLED_ShowString(64, 0, (uint8_t*)hour_str, 8, time_set_count == 4 ? 0 : 1);
+		OLED_ShowString(80, 0, (uint8_t*)minute_str, 8, time_set_count == 5 ? 0 : 1);
+		OLED_ShowString(96, 0, (uint8_t*)sec_str, 8, time_set_count == 6 ? 0 : 1);
+		// 清空第0行剩余部分
+		OLED_ShowString(112, 0, (uint8_t*)"                ", 8, 1);
 		OLED_Refresh();
+	}
+	else if (time_update_flag)
+	{
+		// 当有其他内容显示时，只更新时间数据，不刷新显示
+		time_update_flag = 0;
 	}
 }
 
 void show_time(DS1302_Time time)
 {
 	char year_str[8], month_str[4], day_str[4], hour_str[4], minute_str[4], sec_str[4];
+	
+	// 清空第0行剩余部分
+	OLED_ShowString(112, 0, (uint8_t*)"                ", 8, 1);
+	// 清空第1、2、3行（y=8, 16, 24）
+	OLED_ShowString(0, 8, (uint8_t*)"                ", 8, 1);
+	OLED_ShowString(0, 16, (uint8_t*)"                ", 8, 1);
+	OLED_ShowString(0, 24, (uint8_t*)"                ", 8, 1);
 	
 	sprintf(year_str, "%04d-", (2000 + time.year));
 	sprintf(month_str, "%02d-", time.month);
